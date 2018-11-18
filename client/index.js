@@ -46,8 +46,13 @@ app.on('activate', function () {
 });
 
 // Functions
-function login () {
+function validate_login (email, password) {
+	return true;
+}
+
+function login (email, password) {
 	// store.set('login_token', 'hehehe');
+	return true;
 }
 
 function is_logged () {
@@ -57,3 +62,31 @@ function is_logged () {
 function logout () {
 	store.set('login_token', '');
 }
+
+function data_to_params (data) {
+	var params = data.split('&');
+	var res = [];
+
+    for (var i in params) {
+        var tmp= params[i].split('=');
+        var key = tmp[0], value = tmp[1];
+        res[key] = value;
+	}
+	
+	return res;
+}
+
+// Form submissions
+ipc.on('login_form_submit', function (event, data) {
+	params = data_to_params(data);
+	email = params.email;
+	password = params.password;
+
+	if (validate_login(email, password)) {
+		if (login(email, password)) {
+			// Successful login
+		} else {
+			// Password does not exists
+		}
+	}
+})
