@@ -1,10 +1,16 @@
 const { app, BrowserWindow } = require('electron');
 let mainWindow;
 const ipc = require('electron').ipcMain;
+var net = require('net');
+var util = require('util');
 
 // Local Storage
 const Store = require('electron-store');
 const store = new Store();
+
+function dashboard () {
+	mainWindow.loadFile('template/index.html');
+}
 
 function createWindow() {
 	mainWindow = new BrowserWindow({
@@ -17,7 +23,7 @@ function createWindow() {
 	});
 
 	if (is_logged()) {
-		mainWindow.loadFile('template/index.html');
+		dashboard();
 	} else {
 		mainWindow.loadFile('template/signin.html');
 		mainWindow.context = {
@@ -51,7 +57,29 @@ function validate_login (email, password) {
 }
 
 function login (email, password) {
-	// store.set('login_token', 'hehehe');
+	try {
+		var c = net.createConnection(8008, '127.0.0.1');
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("login");
+			c.write(email);
+			c.write(password);
+		});
+
+		c.on("data", function (buffer) {
+			if (buffer == 'incorrect') {
+
+			} else {
+				store.set('login_token', buffer);
+				dashboard();
+			}
+
+			c.end();
+		})
+	} catch (e) {
+		console.log(e);
+	}
+
 	return true;
 }
 
@@ -85,6 +113,7 @@ ipc.on('login_form_submit', function (event, data) {
 	if (validate_login(email, password)) {
 		if (login(email, password)) {
 			// Successful login
+			login(email, password);
 		} else {
 			// Password does not exists
 		}
