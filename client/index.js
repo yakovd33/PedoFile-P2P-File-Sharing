@@ -41,7 +41,7 @@ app.on('ready', createWindow)
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
 	if (process.platform !== 'darwin') {
-		app.quit()
+		app.quit();
 	}
 })
 
@@ -52,10 +52,6 @@ app.on('activate', function () {
 });
 
 // Functions
-function validate_login (email, password) {
-	return true;
-}
-
 function login (email, password) {
 	try {
 		var c = net.createConnection(8008, '127.0.0.1');
@@ -68,14 +64,14 @@ function login (email, password) {
 
 		c.on("data", function (buffer) {
 			if (buffer == 'incorrect') {
-
+				mainWindow.webContents.send('incorrect', '');
 			} else {
 				store.set('login_token', buffer);
 				dashboard();
 			}
 
 			c.end();
-		})
+		});
 	} catch (e) {
 		console.log(e);
 	}
@@ -109,13 +105,9 @@ ipc.on('login_form_submit', function (event, data) {
 	params = data_to_params(data);
 	email = params.email;
 	password = params.password;
-
-	if (validate_login(email, password)) {
-		if (login(email, password)) {
-			// Successful login
-			login(email, password);
-		} else {
-			// Password does not exists
-		}
+	
+	if (login(email, password)) {
+		// Successful login
+		login(email, password);
 	}
-})
+});

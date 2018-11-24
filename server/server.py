@@ -21,19 +21,6 @@ def get_socket_msg (conn) :
 def send_socket_msg (conn, msg) :
     conn.send(msg.encode())
 
-while True :
-    try :
-        conn, addr = s.accept()
-        print("Connected by: " , addr)
-
-        data = get_socket_msg(conn)
-
-        if (data == "login") :
-            login(conn)
-    except KeyboardInterrupt :
-        sys.exit()
-conn.close()
-
 def login (conn) :
     email = unquote(get_socket_msg(conn))
     password = get_socket_msg(conn)
@@ -53,3 +40,16 @@ def login (conn) :
         # Incorrect details
         send_socket_msg(conn, 'incorrect')
         pass
+
+while True :
+    try :
+        conn, addr = s.accept()
+        print("Connected by: " , addr)
+
+        data = get_socket_msg(conn)
+
+        if (data == "login") :
+            login(conn)
+    except KeyboardInterrupt :
+        sys.exit()
+conn.close()
