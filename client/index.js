@@ -23,6 +23,7 @@ function createWindow() {
 	});
 
 	if (is_logged()) {
+		console.log("dashboard1");
 		dashboard();
 	} else {
 		mainWindow.loadFile('template/signin.html');
@@ -38,7 +39,7 @@ function createWindow() {
 
 app.on('ready', createWindow)
 
-// Quit when all windows are closed.
+// Quit when all windows are closed.	
 app.on('window-all-closed', function () {
 	if (process.platform !== 'darwin') {
 		app.quit();
@@ -66,8 +67,10 @@ function login (email, password) {
 			if (buffer == 'incorrect') {
 				mainWindow.webContents.send('incorrect', '');
 			} else {
-				store.set('login_token', buffer);
+				console.log("dashboard2");
 				dashboard();
+				store.set('login_token', buffer);
+				
 			}
 
 			c.end();
@@ -80,11 +83,21 @@ function login (email, password) {
 }
 
 function is_logged () {
-	return (store.get('login_token') != '');
+	console.log("checking logged!");
+	console.log(store.get('login_token'));
+	if(store.get('login_token') == ('logout' || 'NULL')) {
+		return false;
+		console.log("not logged");
+	}
+	else {
+		console.log("logged");
+		return true;
+	}
+	//return (store.get('login_token') != '');
 }
 
 function logout () {
-	store.set('login_token', '');
+	store.set('login_token', 'logout');
 }
 
 function data_to_params (data) {
@@ -110,4 +123,9 @@ ipc.on('login_form_submit', function (event, data) {
 		// Successful login
 		login(email, password);
 	}
+});
+
+ipc.on('logout', function (event, data) {
+	logout();
+	mainWindow.loadFile('template/signin.html');
 });
