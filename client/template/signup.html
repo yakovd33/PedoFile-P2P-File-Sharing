@@ -6,18 +6,24 @@
 		<title>Sign Up</title>
 		<style>#loader{transition:all .3s ease-in-out;opacity:1;visibility:visible;position:fixed;height:100vh;width:100%;background:#fff;z-index:90000}#loader.fadeOut{opacity:0;visibility:hidden}.spinner{width:40px;height:40px;position:absolute;top:calc(50% - 20px);left:calc(50% - 20px);background-color:#333;border-radius:100%;-webkit-animation:sk-scaleout 1s infinite ease-in-out;animation:sk-scaleout 1s infinite ease-in-out}@-webkit-keyframes sk-scaleout{0%{-webkit-transform:scale(0)}100%{-webkit-transform:scale(1);opacity:0}}@keyframes sk-scaleout{0%{-webkit-transform:scale(0);transform:scale(0)}100%{-webkit-transform:scale(1);transform:scale(1);opacity:0}}</style>
 		<link href="assets/css/style.css" rel="stylesheet">
+		<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+		<script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+		<script>if (window.module) module = window.module;</script>	</head>
 	</head>
 	<body class="app">
 		<div id="loader">
 			<div class="spinner"></div>
 		</div>
-		<script>window.addEventListener('load', () => {
-			const loader = document.getElementById('loader');
-			setTimeout(() => {
-			  loader.classList.add('fadeOut');
-			}, 300);
+
+		<script>
+			window.addEventListener('load', () => {
+				const loader = document.getElementById('loader');
+				setTimeout(() => {
+					loader.classList.add('fadeOut');
+				}, 300);
 			});
 		</script>
+
 		<div class="peers ai-s fxw-nw h-100vh">
 			<div class="peer peer-greed h-100 pos-r bgr-n bgpX-c bgpY-c bgsz-cv" style="background-image:url(assets/images/bg.jpg)">
 				<div class="pos-a centerXY">
@@ -26,18 +32,21 @@
 			</div>
 			<div class="col-12 col-md-4 peer pX-40 pY-80 h-100 bgc-white scrollable pos-r" style="min-width:320px">
 				<h4 class="fw-300 c-grey-900 mB-40">Register</h4>
-				<form>
-					<div class="form-group"><label class="text-normal text-dark">Username</label> <input type="text" class="form-control" placeholder="John Doe"></div>
-					<div class="form-group"><label class="text-normal text-dark">Email Address</label> <input type="email" class="form-control" placeholder="name@email.com"></div>
-					<div class="form-group"><label class="text-normal text-dark">Password</label> <input type="password" class="form-control" placeholder="Password"></div>
-					<div class="form-group"><label class="text-normal text-dark">Confirm Password</label> <input type="password" class="form-control" placeholder="Password"></div>
-					<div class="form-group"><button class="btn btn-primary">Register</button></div>
+				<form id="signup-form">
+					<div class="form-group"><label class="text-normal text-dark">Email Address</label> <input type="email" name="email" class="form-control" placeholder="name@email.com"></div>
+					<div class="form-group"><label class="text-normal text-dark">Password</label> <input type="password" id="signup-pass" name="password" class="form-control" placeholder="Password"></div>
+					<div class="form-group"><label class="text-normal text-dark">Confirm Password</label> <input type="password" id="signup-pass-repeat" class="form-control" placeholder="Password"></div>
+					<div class="form-group"><input type="submit" class="btn btn-primary" value="Register"></div>
+
+					<div id="signup-feedback"></div>
 
 					<br>
-					<a href="signup.html">Already registered? Sign in</a>
+					<a href="signin.html">Already registered? Sign in</a>
 				</form>
 			</div>
 		</div>
 		<script type="text/javascript" src="assets/scripts/vendor.js"></script><script type="text/javascript" src="assets/scripts/bundle.js"></script>
+		<script src="assets/scripts/script.js"></script>
+		<script src="assets/scripts/signup.js"></script>
 	</body>
 </html>

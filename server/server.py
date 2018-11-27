@@ -41,6 +41,22 @@ def login (conn) :
         send_socket_msg(conn, 'incorrect')
         pass
 
+def signup (conn) :
+    email = unquote(get_socket_msg(conn))
+    password = get_socket_msg(conn)
+
+    # TODO: Validate email format ##########################################################
+    
+    # Check if email exists
+    email_query = db.select_query("users", "`email` = '" + email + "'", "")
+    print(db.rowCount)
+    if db.rowCount == 0 :
+        insert_query = db.query("INSERT INTO `users` (`email`, `password_hashed`) VALUES ('" + email + "', '" + password_hash(password) + "')")
+        send_socket_msg(conn, 'success')
+    else :
+        # Email exists
+        send_socket_msg(conn, 'Email address already exists')
+
 while True :
     try :
         conn, addr = s.accept()
@@ -48,8 +64,12 @@ while True :
 
         data = get_socket_msg(conn)
 
-        if (data == "login") :
+        if data == "login" :
             login(conn)
+        elif data == "signup" :
+            signup(conn)
+
+        conn.close()
     except KeyboardInterrupt :
         sys.exit()
 conn.close()

@@ -20,13 +20,17 @@ function createWindow() {
 		minWidth: 1050,
 		minHeight: 650,
 		autoHideMenuBar: true,
+		// transparent: true, 
+		// frame: false
+		// Need to make the window round
 	});
 
 	if (is_logged()) {
 		console.log("dashboard1");
 		dashboard();
 	} else {
-		mainWindow.loadFile('template/signin.html');
+		// mainWindow.loadFile('template/signin.html');
+		mainWindow.loadFile('template/signup.html');
 		mainWindow.context = {
 			test: 'hehehe'	
 		};
@@ -64,13 +68,12 @@ function login (email, password) {
 		});
 
 		c.on("data", function (buffer) {
+			buffer = buffer.toString();
 			if (buffer == 'incorrect') {
 				mainWindow.webContents.send('incorrect', '');
 			} else {
-				console.log("dashboard2");
 				dashboard();
 				store.set('login_token', buffer);
-				
 			}
 
 			c.end();
@@ -83,21 +86,11 @@ function login (email, password) {
 }
 
 function is_logged () {
-	console.log("checking logged!");
-	console.log(store.get('login_token'));
-	if(store.get('login_token') == ('logout' || 'NULL')) {
-		return false;
-		console.log("not logged");
-	}
-	else {
-		console.log("logged");
-		return true;
-	}
-	//return (store.get('login_token') != '');
+	return (store.get('login_token') != '');
 }
 
 function logout () {
-	store.set('login_token', 'logout');
+	store.set('login_token', '');
 }
 
 function data_to_params (data) {
@@ -113,19 +106,56 @@ function data_to_params (data) {
 	return res;
 }
 
+function signup (email, password) {
+	try {
+		var c = net.createConnection(8008, '127.0.0.1');
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("signup");
+			c.write(email);
+			c.write(password);
+		});
+
+		c.on("data", function (buffer) {
+			buffer = buffer.toString();
+			if (buffer != "success") {
+				console.log(buffer);
+				mainWindow.webContents.send('feedback', buffer);
+			} else {
+				login(email, password)
+			}
+
+			c.end();
+		});
+	} catch (e) {
+		console.log(e);
+	}
+
+	return true;
+}
+
 // Form submissions
 ipc.on('login_form_submit', function (event, data) {
 	params = data_to_params(data);
 	email = params.email;
 	password = params.password;
 	
-	if (login(email, password)) {
-		// Successful login
-		login(email, password);
+	if (!login(email, password)) {
+		// Unsuccessful login
 	}
 });
 
 ipc.on('logout', function (event, data) {
 	logout();
 	mainWindow.loadFile('template/signin.html');
+});
+
+ipc.on('signup_form_submit', function (event, data) {
+	params = data_to_params(data);
+	email = params.email;
+	password = params.password;
+	
+	if (!signup(email, password)) {
+		// Unsuccessful signup
+	}
 });
