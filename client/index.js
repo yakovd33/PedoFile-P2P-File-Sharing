@@ -29,8 +29,7 @@ function createWindow() {
 		console.log("dashboard1");
 		dashboard();
 	} else {
-		// mainWindow.loadFile('template/signin.html');
-		mainWindow.loadFile('template/signup.html');
+		mainWindow.loadFile('template/signin.html');
 		mainWindow.context = {
 			test: 'hehehe'	
 		};

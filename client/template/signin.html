@@ -9,6 +9,7 @@
 		<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 		<script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 		<script>if (window.module) module = window.module;</script>
+		<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 	</head>
 
 	<body class="app">
@@ -16,13 +17,15 @@
 			<div class="spinner"></div>
 		</div>
 
+		<div id="particles-js"></div>
+
 		<div class="peers ai-s fxw-nw h-100vh">
 			<div class="d-n@sm- peer peer-greed h-100 pos-r bgr-n bgpX-c bgpY-c bgsz-cv" style="background-image:url(assets/images/bg.jpg)">
 				<div class="pos-a centerXY">
 					<div class="bdrs-50p pos-r" style="width:120px;height:120px"><img class="pos-a centerXY" src="assets/images/logo.png" alt=""></div>
 				</div>
 			</div>
-			<div class="col-12 col-md-4 peer pX-40 pY-80 h-100 bgc-white scrollable pos-r" style="min-width:320px">
+			<div class="col-12 col-md-4 peer pX-40 pY-80 h-100 bgc-white scrollable pos-r" id="login-form-wrap" style="min-width:320px">
 				<h4 class="fw-300 c-grey-900 mB-40">Login</h4>
 				<form id="login-form">
 					<div class="form-group"><label class="text-normal text-dark">Email</label> <input type="email" name="email" class="form-control" placeholder="example@gmail.com"></div>
