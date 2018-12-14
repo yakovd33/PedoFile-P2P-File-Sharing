@@ -3,6 +3,7 @@ from socket import *
 from database import DB
 from functions import *
 from urllib.parse import unquote
+import json
 
 try:
     HOST = "127.0.0.1"
@@ -49,7 +50,6 @@ def signup (conn) :
     
     # Check if email exists
     email_query = db.select_query("users", "`email` = '" + email + "'", "")
-    print(db.rowCount)
     if db.rowCount == 0 :
         insert_query = db.query("INSERT INTO `users` (`email`, `password_hashed`) VALUES ('" + email + "', '" + password_hash(password) + "')")
         send_socket_msg(conn, 'success')
@@ -57,19 +57,75 @@ def signup (conn) :
         # Email exists
         send_socket_msg(conn, 'Email address already exists')
 
+def signup_device (conn) :
+    print("signing device")
+    login_token = unquote(get_socket_msg(conn))
+    device_name = unquote(get_socket_msg(conn))
+    platform = unquote(get_socket_msg(conn))
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    
+    # Insert device
+    db.query("INSERT INTO `devices` (`user_id`, `name`, `last_active`, `platform`) VALUES (" + user_id + ", '" + device_name + "', '" + get_timestamp() + "', '" + platform + "')")
+    send_socket_msg(conn, str(db.lastInsertId))
+
+def get_user_devices (conn) :
+    login_token = unquote(get_socket_msg(conn))
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    user_devices_query = db.select_query('devices', 'user_id = ' + user_id + " AND `active`", '')
+
+    devices = []
+    for device in user_devices_query :
+        tmp_device = {}
+        tmp_device['id'] = device[0]
+        tmp_device['name'] = device[2]
+        tmp_device['platform'] = device[3]
+        tmp_device['last_active'] = humanize_time(device[4])
+        devices.append(tmp_device)
+    
+    send_socket_msg(conn, json.dumps(devices))
+
+def delete_device (conn) :
+    login_token = unquote(get_socket_msg(conn))
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    device_id = unquote(get_socket_msg(conn))
+
+    # Check if user is the owner of the device
+    db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
+    if db.rowCount > 0 :
+        db.query("UPDATE `devices` SET `active` = 0 WHERE `id` = " + device_id)
+
+def update_device_ip (conn) :
+    login_token = unquote(get_socket_msg(conn))
+    device_id = unquote(get_socket_msg(conn))
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    ip = unquote(get_socket_msg(conn))
+
+    # Check if user is the owner of the device
+    db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
+    if db.rowCount > 0 :
+        db.query("UPDATE `devices` SET `ip` = '" + ip + "' WHERE `id` = " + device_id)
+
+    send_socket_msg(conn, 'true')
+
 while True :
-    try :
-        conn, addr = s.accept()
-        print("Connected by: " , addr)
+    conn, addr = s.accept()
+    print("Connected by: " , addr)
 
-        data = get_socket_msg(conn)
+    data = get_socket_msg(conn)
 
-        if data == "login" :
-            login(conn)
-        elif data == "signup" :
-            signup(conn)
+    if data == "login" :
+        login(conn)
+    elif data == "signup" :
+        signup(conn)
+    elif data == "signup_device" :
+        signup_device(conn)
+    elif data == "get_user_devices" :
+        get_user_devices(conn)
+    elif data == "delete_device" :
+        delete_device(conn)
+    elif data == "update_device_ip" :
+        update_device_ip(conn)
 
-        conn.close()
-    except KeyboardInterrupt :
-        sys.exit()
-conn.close()
+    conn.close()
+
+s.close()

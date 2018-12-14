@@ -1,5 +1,8 @@
+html {
+	border-radius: 7px !important;
+}
+
 body {
-	border-radius: 20px;
 }
 
 svg {
@@ -1844,6 +1847,10 @@ a.fc-more:hover {
 	background-color: #eee
 }
 
+.sidebar {
+	z-index: 999999999 !important;
+}
+
 .sidebar .sidebar-inner .sidebar-logo a .logo {
 	text-align: center;
 	padding-top: 10px;
@@ -1876,4 +1883,11 @@ a.fc-more:hover {
   background-color: #2196f3;
   z-index: 999;
   overflow-y: hidden;
+}
+
+.row.row-eq-height {
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: flex;
 }
