@@ -322,10 +322,9 @@ function file_ask_listen () {
 		var server = net.createServer(function(client){
 			var packages = 0;
 			var totalBytes = 0;
-			var filename = "screencapture-facebook-messages-requests-t-100011188304760-2018-12-12-19_14_13.png";
+			var filename = "4.jpg";
 			var readStream = fs.createReadStream('C:\\Users\\yakov\\Desktop\\' + filename, {highWaterMark: 16384});
 
-			client.write(filename);
 
 			readStream.on('data', function(chunk) {
 				packages++;    
@@ -389,7 +388,7 @@ function recieve_file () {
 	socket.on('close', function(){
 		console.log("total packages", packets);
 
-		var writeStream = fs.createWriteStream(path.join(__dirname, "out.png"));
+		var writeStream = fs.createWriteStream(path.join(__dirname, "out.jpg"));
 		console.log("buffer size", buffer.length);
 		while (buffer.length) {
 			var head = buffer.slice(0, 4);
