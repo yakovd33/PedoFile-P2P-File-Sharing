@@ -246,42 +246,34 @@
 									</div>
 								</div>
 							</div>
+							<script>
+								context.files.forEach(file => {
+									var source = document.getElementById("file-template").innerHTML;
+									var template = Handlebars.compile(source);
+									var context = { file_name: file.name };
+									var html = template(context);
+									document.write(html);
+								});
+							</script>
 
-							<div class="col-md-3">
-								<div class="recent-item recent-item-pic">
-									<div class="recent-item-pic" style="background-image: url('assets/images/4.jpg')"></div>
-									<div class="recent-item-title">
-										<div class="recent-item-content-type-icon"><img src="assets/images/picture-icon.png	"></div>
-										File Name
-									</div>
-								</div>
-							</div>
-
-							<div class="col-md-3">
-								<div class="recent-item recent-item-pic">
-									<div class="recent-item-pic" style="background-image: url('assets/images/4.jpg')"></div>
-									<div class="recent-item-title">
-										<div class="recent-item-content-type-icon"><img src="assets/images/picture-icon.png	"></div>
-										File Name
-									</div>
-								</div>
-							</div>
-
-							<div class="col-md-3">
-								<div class="recent-item recent-item-pic">
-									<div class="recent-item-pic" style="background-image: url('assets/images/4.jpg')"></div>
-									<div class="recent-item-title">
-										<div class="recent-item-content-type-icon"><img src="assets/images/picture-icon.png	"></div>
-										File Name
-									</div>
-								</div>
-							</div>
 						</div>
 					</div>
 				</div>
 			</main>
 			<footer class="bdT ta-c p-30 lh-0 fsz-sm c-grey-600"><span>Copyright © 2018-2019 <a href="#">PedoFile</a>. All rights reserved.</span></footer>
 		</div>
+
+		<script id="file-template" type="text/x-handlebars-template">
+			<div class="col-md-3">
+				<div class="recent-item recent-item-pic">
+					<div class="recent-item-pic" style="background-image: url('assets/images/4.jpg')"></div>
+					<div class="recent-item-title">
+						<div class="recent-item-content-type-icon"><img src="assets/images/picture-icon.png	"></div>
+						{{ file_name }}
+					</div>
+				</div>
+			</div>
+		</script>
 
 		<script id="device-template" type="text/x-handlebars-template">
 			<li class="ui-card">

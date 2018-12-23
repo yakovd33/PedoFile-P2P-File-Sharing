@@ -33,15 +33,25 @@ function dashboard () {
 			console.log('devices json: ' + devices_json);
 			c.end();
 
-			mainWindow.loadFile('template/index.html');
-			mainWindow.context = {
-				devices: JSON.parse(devices_json)
-			}
+			var c = net.createConnection(SERVER_PORT, SERVER_IP);
+			c.on("connect", function() {
+				// connected to TCP server.
+				console.log('');
+				c.write("get_user_devices");
+				c.write(store.get('login_token')) // Login token
+			});
 
-			if (is_device_registered()) {
-				update_device_ip();
-				setInterval(update_device_ip, 30000); // Update ip every 30 seconds
-			}
+			c.on("data", function (devices_json) {
+				mainWindow.loadFile('template/index.html');
+				mainWindow.context = {
+					devices: JSON.parse(devices_json)
+				}
+
+				if (is_device_registered()) {
+					update_device_ip();
+					setInterval(update_device_ip, 30000); // Update ip every 30 seconds
+				}
+			});
 		});
 	} catch (e) {
 		console.log(e);
@@ -463,3 +473,4 @@ function recieve_file () {
 	});
 }
 
+logout();

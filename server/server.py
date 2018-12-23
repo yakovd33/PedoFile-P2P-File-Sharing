@@ -74,7 +74,22 @@ def get_user_devices (conn) :
     user_id = str(get_user_id_by_login_token(login_token, db))
 
     if user_id :
-        user_devices_query = db.select_query('devices', 'user_id = ' + user_id + " AND `active`", '')
+        user_devices_query = db.select_query('devices', 'user_id = ' + user_id, '')
+        files = []
+        for device in user_devices_query :
+            tmp_file = {}
+            tmp_file['id'] = device[0]
+            tmp_file['name'] = device[1]
+            files.append(tmp_file)
+        
+        send_socket_msg(conn, json.dumps(files))
+
+def get_user_files (conn) :
+    login_token = unquote(get_socket_msg(conn))
+    user_id = str(get_user_id_by_login_token(login_token, db))
+
+    if user_id :
+        user_devices_query = db.select_query('files', 'user_id = ' + user_id + " AND `active`", '')
         devices = []
         for device in user_devices_query :
             tmp_device = {}
@@ -149,6 +164,8 @@ while True :
         update_device_ip(conn)
     elif data == "register_file" :
         register_file(conn)
+    elif data == "get_user_devices" :
+        get_user_devices(conn)
 
     conn.close()
 
