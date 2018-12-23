@@ -21,7 +21,7 @@ def get_user_id_by_login_token (token, db) :
     if db.rowCount > 0 :
         return row[0][1]
     else :
-        return false
+        return False
 
 def get_timestamp () :
     return datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
