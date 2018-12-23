@@ -59,7 +59,6 @@ def signup (conn) :
         send_socket_msg(conn, 'Email address already exists')
 
 def signup_device (conn) :
-    print("signing device")
     login_token = unquote(get_socket_msg(conn))
     device_name = unquote(get_socket_msg(conn))
     platform = unquote(get_socket_msg(conn))
@@ -73,9 +72,9 @@ def signup_device (conn) :
 def get_user_devices (conn) :
     login_token = unquote(get_socket_msg(conn))
     user_id = str(get_user_id_by_login_token(login_token, db))
-    user_devices_query = db.select_query('devices', 'user_id = ' + user_id + " AND `active`", '')
 
     if user_id :
+        user_devices_query = db.select_query('devices', 'user_id = ' + user_id + " AND `active`", '')
         devices = []
         for device in user_devices_query :
             tmp_device = {}
