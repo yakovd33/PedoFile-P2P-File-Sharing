@@ -7,8 +7,7 @@ var os = require('os');
 let externalip = require('externalip');
 var fs = require('fs');
 var path = require('path');
-var fileName = "escondidas.jpg";
-var filePath = path.join(__dirname, fileName);
+const { dialog } = require('electron')
 
 // file_listen();
 
@@ -225,7 +224,7 @@ function update_device_ip () {
 	externalip(function (err, ip) {
 		// Update device external ip
 		try {
-			var c = net.createConnection(SERVER_PORT, );
+			var c = net.createConnection(SERVER_PORT, SERVER_IP);
 			c.on("connect", function() {
 				// connected to TCP server.
 				c.write("update_device_ip");
@@ -285,6 +284,47 @@ ipc.on('delete_device', function (event, device_id) {
 		index_to_delete++;
 	});
 });
+
+ipc.on('select_file', function (event, device_id) {
+	files = dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] });
+
+	i = 0;
+	files.forEach(file => {
+		i++;
+
+		setTimeout(function () {
+			register_file(file);
+		}, 300 * i);
+	});
+});
+
+ipc.on('select_folder', function (event, device_id) {
+	folders = dialog.showOpenDialog({ properties: ['openFile', 'openDirectory', 'multiSelections'] });
+});
+
+// Register file in the DB
+function register_file (path) {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("register_file");
+			c.write(store.get('login_token')) // Login token
+			c.write(store.get('device_id')) // Device token
+			c.write(path);
+		});
+
+		c.on("data", function (buffer) {
+			buffer = buffer.toString();
+			if (buffer != "error") {
+			}
+
+			c.end();
+		});
+	} catch (e) {
+		console.log(e);
+	}
+}
 
 // File send
 function file_listen () {
@@ -420,3 +460,4 @@ function recieve_file () {
 		}, 2000);
 	});
 }
+

@@ -1,4 +1,5 @@
 import sys, signal
+import os
 from socket import *
 from database import DB
 from functions import *
@@ -107,6 +108,23 @@ def update_device_ip (conn) :
 
     send_socket_msg(conn, 'true')
 
+def register_file (conn) :
+    login_token = unquote(get_socket_msg(conn))
+    device_id = unquote(get_socket_msg(conn))
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    path = unquote(get_socket_msg(conn))
+
+    filename_w_ext = os.path.basename(path)
+    filename, file_extension = os.path.splitext(filename_w_ext)
+
+    # Check if user is the owner of the device
+    db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
+    if db.rowCount > 0 :
+        # Register the file
+        db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "' )")
+
+    send_socket_msg(conn, 'true')
+
 while True :
     conn, addr = s.accept()
     print("Connected by: " , addr)
@@ -125,6 +143,8 @@ while True :
         delete_device(conn)
     elif data == "update_device_ip" :
         update_device_ip(conn)
+    elif data == "register_file" :
+        register_file(conn)
 
     conn.close()
 

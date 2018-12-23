@@ -22,3 +22,19 @@ $.each($(".disconnect"), function () {
 function delete_device (device_id) {
     electron.ipcRenderer.send('delete_device', device_id);
 }
+
+// File chooser
+$(document).ready(function() {
+    $("#container-floating").one("mouseenter touchend", function() {
+        $("#container-floating .plus").addClass("activated");
+        $('.lock-date').addClass("activated");
+    });
+});
+
+$("#upload-file").click(function () {
+    electron.ipcRenderer.send('select_file', '');
+});
+
+$("#upload-folder").click(function () {
+    electron.ipcRenderer.send('select_folder', '');
+});

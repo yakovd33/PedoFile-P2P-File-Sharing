@@ -9,10 +9,26 @@
 		<link href="assets/css/index.css" rel="stylesheet">
 		<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 		<script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-		<script>if (window.module) module = window.module;</script>	</head>
+		<script>if (window.module) module = window.module;</script>
 		<script src="assets/scripts/handlebars-v4.0.12.js"></script>
 		<script src="assets/scripts/templating.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css">
+	</head>
 	<body class="app">
+		<div id="container-floating" class="fab--book-holiday" data-toggle="manualtooltip" data-trigger="manual" data-placement="left" title="Book time off">
+			<a href="#" id="lock-date-button" class="lock-date">
+				<div class="lock-date nds" data-toggle="manualtooltip" data-trigger="manual" data-placement="left" data-original-title="Lock date">
+				<i class="material-icons" id="upload-folder">folder</i>	
+				</div>
+			</a>
+			<div id="floating-button" class="btn-tt-success">
+				<a tabindex="0" role="button" class="book-hol" id="upload-file">
+					<i class="material-icons plus">add</i>
+					<i class="material-icons btn-add" >insert_drive_file</i>
+				</a>
+			</div>
+			</div>
+
 		<div id="loader">
 			<div class="spinner"></div>
 		</div>
@@ -233,7 +249,7 @@
 
 							<div class="col-md-3">
 								<div class="recent-item recent-item-pic">
-									<div class="recent-item-pic" style="background-image: url('assets/images/test.jpg')"></div>
+									<div class="recent-item-pic" style="background-image: url('assets/images/4.jpg')"></div>
 									<div class="recent-item-title">
 										<div class="recent-item-content-type-icon"><img src="assets/images/picture-icon.png	"></div>
 										File Name
@@ -243,7 +259,7 @@
 
 							<div class="col-md-3">
 								<div class="recent-item recent-item-pic">
-									<div class="recent-item-pic" style="background-image: url('assets/images/test.jpg')"></div>
+									<div class="recent-item-pic" style="background-image: url('assets/images/4.jpg')"></div>
 									<div class="recent-item-title">
 										<div class="recent-item-content-type-icon"><img src="assets/images/picture-icon.png	"></div>
 										File Name
@@ -253,7 +269,7 @@
 
 							<div class="col-md-3">
 								<div class="recent-item recent-item-pic">
-									<div class="recent-item-pic" style="background-image: url('assets/images/test.jpg')"></div>
+									<div class="recent-item-pic" style="background-image: url('assets/images/4.jpg')"></div>
 									<div class="recent-item-title">
 										<div class="recent-item-content-type-icon"><img src="assets/images/picture-icon.png	"></div>
 										File Name

@@ -644,4 +644,218 @@
       transform: translateX(0px);
     }
   }
+
+  /* Floating button */
   
+  #floating-button {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    position: fixed;
+    cursor: pointer;
+    box-shadow: 0px 2px 5px #666;
+}
+
+#floating-button.btn-tt-success {
+    background: #2196f3;
+}
+
+#container-floating {
+    width: 70px;
+    height: 70px;
+    padding-left: 8px;
+    padding-top: 8px;
+    z-index: 950;
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+}
+
+#container-floating.fab--book-holiday {
+    height: 85px;
+    display: flex;
+    align-items: flex-end;
+}
+
+#container-floating .nds {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    position: absolute;
+    z-index: 300;
+    transform: scale(0);
+    cursor: pointer;
+    box-shadow: 0px 2px 5px #666;
+}
+
+#container-floating .nds i {
+    font-size: 22px;
+    top: 9px;
+    left: 9px;
+}
+
+#container-floating .lock-date {
+    background: #459FF3;
+    left: 15px;
+    top: -25px;
+    animation-delay: 0.15s;
+    animation: bounce-out-nds 0s linear;
+}
+
+.lock-date.activated {
+    animation-duration: 0.15s !important;
+}
+
+#container-floating .lock-date.nds-up {
+    top: -50px;
+}
+
+#container-floating i {
+    font-size: 32px;
+    color: white;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 0;
+}
+
+.plus {
+    display: block;
+    bottom: 0;
+    margin: 0;
+    transition: all 0.3s;
+    height: 32px;
+    width: 32px;
+}
+
+.plus.activated {
+    animation: plus-out 0.3s;
+}
+
+#container-floating:hover .btn-add-user {
+    background-color: #5dabf5;
+}
+
+#container-floating:hover .btn-tt-success {
+    background-color: #26bf73;
+}
+
+#container-floating:hover .plus,
+#container-floating.on .plus {
+    animation: plus-in 0.15s linear;
+    animation-fill-mode: forwards;
+}
+
+.btn-add {
+    display: block;
+    opacity: 0;
+    margin: auto;
+    transform: rotateZ(-70deg);
+    top: 4px !important;
+    left: 4px !important;
+    padding: 8px !important;
+}
+
+#container-floating:hover .btn-add,
+#container-floating.on .btn-add {
+    animation: edit-in 0.2s;
+    animation-delay: 0.1s;
+    animation-fill-mode: forwards;
+}
+
+#container-floating:hover .nds {
+    animation: bounce-nds 0.1s linear;
+    animation-fill-mode: forwards;
+    animation-delay: 0.08s;
+}
+
+@keyframes edit-in {
+    from {
+        opacity: 0;
+        transform: rotateZ(-70deg);
+        pointer-events: none;
+    }
+
+    to {
+        opacity: 1;
+        transform: rotateZ(0deg);
+        pointer-events: initial;
+    }
+}
+
+@keyframes edit-out {
+    from {
+        opacity: 1;
+        transform: rotateZ(0deg);
+    }
+
+    to {
+        opacity: 0;
+        transform: rotateZ(-70deg);
+    }
+}
+
+@keyframes plus-in {
+    from {
+        opacity: 1;
+        transform: rotateZ(0deg);
+        pointer-events: none;
+    }
+
+    to {
+        opacity: 0;
+        transform: rotateZ(180deg);
+        pointer-events: initial;
+    }
+}
+
+@keyframes plus-out {
+    from {
+        opacity: 0;
+        transform: rotateZ(180deg);
+    }
+
+    to {
+        opacity: 1;
+        transform: rotateZ(0deg);
+    }
+}
+
+@keyframes bounce-out-nds {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+
+@keyframes bounce-nds {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.fab--add-user {
+    margin-top: 40px;
+    float: right;
+    margin-right: -7px;
+}
+
+.fab--book-holiday {
+    position: absolute;
+    /* right: 8px;
+    top: 41px; */
+}
+
+.fab--book-holiday #floating-button {
+    position: absolute;
+}
