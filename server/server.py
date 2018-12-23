@@ -65,35 +65,38 @@ def signup_device (conn) :
     platform = unquote(get_socket_msg(conn))
     user_id = str(get_user_id_by_login_token(login_token, db))
     
-    # Insert device
-    db.query("INSERT INTO `devices` (`user_id`, `name`, `last_active`, `platform`) VALUES (" + user_id + ", '" + device_name + "', '" + get_timestamp() + "', '" + platform + "')")
-    send_socket_msg(conn, str(db.lastInsertId))
+    if (user_id) :
+        # Insert device
+        db.query("INSERT INTO `devices` (`user_id`, `name`, `last_active`, `platform`) VALUES (" + user_id + ", '" + device_name + "', '" + get_timestamp() + "', '" + platform + "')")
+        send_socket_msg(conn, str(db.lastInsertId))
 
 def get_user_devices (conn) :
     login_token = unquote(get_socket_msg(conn))
     user_id = str(get_user_id_by_login_token(login_token, db))
     user_devices_query = db.select_query('devices', 'user_id = ' + user_id + " AND `active`", '')
 
-    devices = []
-    for device in user_devices_query :
-        tmp_device = {}
-        tmp_device['id'] = device[0]
-        tmp_device['name'] = device[2]
-        tmp_device['platform'] = device[3]
-        tmp_device['last_active'] = humanize_time(device[4])
-        devices.append(tmp_device)
-    
-    send_socket_msg(conn, json.dumps(devices))
+    if user_id :
+        devices = []
+        for device in user_devices_query :
+            tmp_device = {}
+            tmp_device['id'] = device[0]
+            tmp_device['name'] = device[2]
+            tmp_device['platform'] = device[3]
+            tmp_device['last_active'] = humanize_time(device[4])
+            devices.append(tmp_device)
+        
+        send_socket_msg(conn, json.dumps(devices))
 
 def delete_device (conn) :
     login_token = unquote(get_socket_msg(conn))
     user_id = str(get_user_id_by_login_token(login_token, db))
     device_id = unquote(get_socket_msg(conn))
 
-    # Check if user is the owner of the device
-    db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
-    if db.rowCount > 0 :
-        db.query("UPDATE `devices` SET `active` = 0 WHERE `id` = " + device_id)
+    if user_id :
+        # Check if user is the owner of the device
+        db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
+        if db.rowCount > 0 :
+            db.query("UPDATE `devices` SET `active` = 0 WHERE `id` = " + device_id)
 
 def update_device_ip (conn) :
     login_token = unquote(get_socket_msg(conn))
@@ -101,12 +104,13 @@ def update_device_ip (conn) :
     user_id = str(get_user_id_by_login_token(login_token, db))
     ip = unquote(get_socket_msg(conn))
 
-    # Check if user is the owner of the device
-    db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
-    if db.rowCount > 0 :
-        db.query("UPDATE `devices` SET `ip` = '" + ip + "' WHERE `id` = " + device_id)
+    if user_id :
+        # Check if user is the owner of the device
+        db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
+        if db.rowCount > 0 :
+            db.query("UPDATE `devices` SET `ip` = '" + ip + "' WHERE `id` = " + device_id)
 
-    send_socket_msg(conn, 'true')
+        send_socket_msg(conn, 'true')
 
 def register_file (conn) :
     login_token = unquote(get_socket_msg(conn))
@@ -114,16 +118,17 @@ def register_file (conn) :
     user_id = str(get_user_id_by_login_token(login_token, db))
     path = unquote(get_socket_msg(conn))
 
-    filename_w_ext = os.path.basename(path)
-    filename, file_extension = os.path.splitext(filename_w_ext)
+    if user_id :
+        filename_w_ext = os.path.basename(path)
+        filename, file_extension = os.path.splitext(filename_w_ext)
 
-    # Check if user is the owner of the device
-    db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
-    if db.rowCount > 0 :
-        # Register the file
-        db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "' )")
+        # Check if user is the owner of the device
+        db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
+        if db.rowCount > 0 :
+            # Register the file
+            db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "' )")
 
-    send_socket_msg(conn, 'true')
+        send_socket_msg(conn, 'true')
 
 while True :
     conn, addr = s.accept()

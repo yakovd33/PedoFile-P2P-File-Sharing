@@ -17,8 +17,11 @@ def random_hash () :
 
 def get_user_id_by_login_token (token, db) :
     row = db.select_query('login_tokens', '`hash` = "' + token + '"', '')
-    print(row[0])
-    return row[0][1]
+
+    if db.rowCount > 0 :
+        return row[0][1]
+    else :
+        return false
 
 def get_timestamp () :
     return datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
