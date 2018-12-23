@@ -64,7 +64,7 @@ def signup_device (conn) :
     platform = unquote(get_socket_msg(conn))
     user_id = str(get_user_id_by_login_token(login_token, db))
     
-    if (user_id) :
+    if user_id :
         # Insert device
         db.query("INSERT INTO `devices` (`user_id`, `name`, `last_active`, `platform`) VALUES (" + user_id + ", '" + device_name + "', '" + get_timestamp() + "', '" + platform + "')")
         send_socket_msg(conn, str(db.lastInsertId))

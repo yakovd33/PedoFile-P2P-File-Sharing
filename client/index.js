@@ -128,7 +128,7 @@ function is_logged () {
 // store.set('device_id', '');
 // store.set('login_token', '');
 function is_device_registered () {
-	return (store.get('device_id') != '');
+	return (store.get('device_id') != '' && store.get('device_id') != undefined);
 }
 
 function register_device () {
@@ -462,3 +462,4 @@ function recieve_file () {
 		}, 2000);
 	});
 }
+
