@@ -38,8 +38,10 @@ function dashboard () {
 				devices: JSON.parse(devices_json)
 			}
 
-			update_device_ip();
-			setInterval(update_device_ip, 30000); // Update ip every 30 seconds
+			if (is_device_registered()) {
+				update_device_ip();
+				setInterval(update_device_ip, 30000); // Update ip every 30 seconds
+			}
 		});
 	} catch (e) {
 		console.log(e);
@@ -460,4 +462,3 @@ function recieve_file () {
 		}, 2000);
 	});
 }
-
