@@ -64,7 +64,7 @@ def signup_device (conn) :
     platform = unquote(get_socket_msg(conn))
     user_id = str(get_user_id_by_login_token(login_token, db))
     
-    if user_id :
+    if user_id is not 'False' :
         # Insert device
         db.query("INSERT INTO `devices` (`user_id`, `name`, `last_active`, `platform`) VALUES (" + user_id + ", '" + device_name + "', '" + get_timestamp() + "', '" + platform + "')")
         send_socket_msg(conn, str(db.lastInsertId))
@@ -72,7 +72,7 @@ def signup_device (conn) :
 def get_user_files (conn, login_token, limit) :
     user_id = str(get_user_id_by_login_token(login_token, db))
 
-    if user_id :
+    if user_id is not 'False' :
         user_files_query = db.select_query('files', 'user_id = ' + user_id, 'LIMIT ' + limit)
         files = []
         for file in user_files_query :
@@ -105,7 +105,7 @@ def delete_device (conn) :
     user_id = str(get_user_id_by_login_token(login_token, db))
     device_id = unquote(get_socket_msg(conn))
 
-    if user_id :
+    if user_id is not 'False' :
         # Check if user is the owner of the device
         db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
         if db.rowCount > 0 :
@@ -117,7 +117,7 @@ def update_device_ip (conn) :
     user_id = str(get_user_id_by_login_token(login_token, db))
     ip = unquote(get_socket_msg(conn))
 
-    if user_id :
+    if user_id is not 'False' :
         # Check if user is the owner of the device
         db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
         if db.rowCount > 0 :
@@ -131,7 +131,7 @@ def register_file (conn) :
     user_id = str(get_user_id_by_login_token(login_token, db))
     path = unquote(get_socket_msg(conn))
 
-    if user_id :
+    if user_id is not 'False' :
         filename_w_ext = os.path.basename(path)
         filename, file_extension = os.path.splitext(filename_w_ext)
 
