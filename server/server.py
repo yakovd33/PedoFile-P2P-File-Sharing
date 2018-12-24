@@ -150,6 +150,10 @@ while True :
     data = get_socket_msg(conn)
     tokens = get_tokens(data)
     action = tokens[0]
+
+    if len(tokens) == 1 :
+        action = data
+
     print(tokens)
 
     if action == "login" :
@@ -159,6 +163,7 @@ while True :
     elif action == "signup_device" :
         signup_device(conn)
     elif action == "get_user_devices" :
+        print('hehehe')
         get_user_devices(conn)
     elif action == "delete_device" :
         delete_device(conn)
