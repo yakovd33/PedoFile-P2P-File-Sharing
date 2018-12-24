@@ -69,27 +69,26 @@ def signup_device (conn) :
         db.query("INSERT INTO `devices` (`user_id`, `name`, `last_active`, `platform`) VALUES (" + user_id + ", '" + device_name + "', '" + get_timestamp() + "', '" + platform + "')")
         send_socket_msg(conn, str(db.lastInsertId))
 
-def get_user_devices (conn) :
-    login_token = unquote(get_socket_msg(conn))
+def get_user_files (conn, login_token, limit) :
     user_id = str(get_user_id_by_login_token(login_token, db))
 
     if user_id :
-        user_devices_query = db.select_query('devices', 'user_id = ' + user_id, '')
+        user_files_query = db.select_query('files', 'user_id = ' + user_id, 'LIMIT ' + limit)
         files = []
-        for device in user_devices_query :
+        for file in user_files_query :
             tmp_file = {}
-            tmp_file['id'] = device[0]
-            tmp_file['name'] = device[1]
+            tmp_file['id'] = file[0]
+            tmp_file['name'] = file[1]
             files.append(tmp_file)
         
         send_socket_msg(conn, json.dumps(files))
 
-def get_user_files (conn) :
+def get_user_devices (conn) :
     login_token = unquote(get_socket_msg(conn))
     user_id = str(get_user_id_by_login_token(login_token, db))
 
-    if user_id :
-        user_devices_query = db.select_query('files', 'user_id = ' + user_id + " AND `active`", '')
+    if user_id is not 'False' :
+        user_devices_query = db.select_query('devices', 'user_id = ' + user_id + " AND `active`", '')
         devices = []
         for device in user_devices_query :
             tmp_device = {}
@@ -149,23 +148,26 @@ while True :
     print("Connected by: " , addr)
 
     data = get_socket_msg(conn)
+    tokens = get_tokens(data)
+    action = tokens[0]
+    print(tokens)
 
-    if data == "login" :
+    if action == "login" :
         login(conn)
-    elif data == "signup" :
+    elif action == "signup" :
         signup(conn)
-    elif data == "signup_device" :
+    elif action == "signup_device" :
         signup_device(conn)
-    elif data == "get_user_devices" :
+    elif action == "get_user_devices" :
         get_user_devices(conn)
-    elif data == "delete_device" :
+    elif action == "delete_device" :
         delete_device(conn)
-    elif data == "update_device_ip" :
+    elif action == "update_device_ip" :
         update_device_ip(conn)
-    elif data == "register_file" :
+    elif action == "register_file" :
         register_file(conn)
-    elif data == "get_user_devices" :
-        get_user_devices(conn)
+    elif action == "get_user_files" or tokens[0] == 'get_user_files' :
+        get_user_files(conn, tokens[1], tokens[2])
 
     conn.close()
 

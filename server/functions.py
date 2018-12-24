@@ -28,3 +28,6 @@ def get_timestamp () :
 
 def humanize_time (time) :
     return timeago.format(time)
+
+def get_tokens (buffer) :
+    return buffer.split(';;')

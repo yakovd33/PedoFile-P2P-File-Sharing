@@ -38,3 +38,25 @@ $("#upload-file").click(function () {
 $("#upload-folder").click(function () {
     electron.ipcRenderer.send('select_folder', '');
 });
+
+electron.ipcRenderer.on('devices', function (event, devices) {
+    $("#devices-counter").html(devices.length)
+
+    devices.forEach(device => {
+        var source = document.getElementById("device-template").innerHTML;
+        var template = Handlebars.compile(source);
+        var context = { id: device.id, platform: device.platform, name: device.name, last_active: device.last_active };
+        var html = template(context);
+        $("#device-cards ul.device-list").append(html);
+    });
+});
+
+electron.ipcRenderer.on('files', function (event, files) {
+    files.forEach(file => {
+        var source = document.getElementById("file-template").innerHTML;
+        var template = Handlebars.compile(source);
+        var context = { id: file.id, name: file.name };
+        var html = template(context);
+        $("#recent-items").append(html);
+    });
+});

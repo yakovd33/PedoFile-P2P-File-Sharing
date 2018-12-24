@@ -19,43 +19,19 @@ const Store = require('electron-store');
 const store = new Store();
 
 function dashboard () {
-	try {
-		var c = net.createConnection(SERVER_PORT, SERVER_IP);
-		c.on("connect", function() {
-			// connected to TCP server.
-			console.log('');
-			c.write("get_user_devices");
-			c.write(store.get('login_token')) // Login token
-		});
+	mainWindow.loadFile('template/index.html');
 
-		c.on("data", function (devices_json) {
-			devices_json = devices_json.toString();
-			console.log('devices json: ' + devices_json);
-			c.end();
-
-			var c = net.createConnection(SERVER_PORT, SERVER_IP);
-			c.on("connect", function() {
-				// connected to TCP server.
-				console.log('');
-				c.write("get_user_devices");
-				c.write(store.get('login_token')) // Login token
-			});
-
-			c.on("data", function (devices_json) {
-				mainWindow.loadFile('template/index.html');
-				mainWindow.context = {
-					devices: JSON.parse(devices_json)
-				}
-
-				if (is_device_registered()) {
-					update_device_ip();
-					setInterval(update_device_ip, 30000); // Update ip every 30 seconds
-				}
-			});
-		});
-	} catch (e) {
-		console.log(e);
-	}
+	ipc.on('did-finish-load', function () {
+		update_files_list();
+		update_devices_list();
+	
+		// setTimeout(function () {
+		// 	if (is_device_registered()) {
+		// 		update_device_ip();
+		// 		setInterval(update_device_ip, 30000); // Update ip every 30 seconds
+		// 	}
+		// }, 200);
+	});
 }
 
 function createWindow() {
@@ -256,6 +232,48 @@ function update_device_ip () {
 			console.log(e);
 		}
 	});
+}
+
+function update_devices_list () {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			console.log('');
+			c.write("get_user_devices");
+			c.write(store.get('login_token')) // Login token
+		});
+
+		c.on("data", function (devices_json) {
+			devices_json = devices_json.toString();
+			console.log('devices json: ' + devices_json);
+			c.end();
+
+			mainWindow.webContents.send('devices', JSON.parse(devices_json))
+		});
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+function update_files_list () {
+	try {
+		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
+		socket.on("connect", function() {
+			// connected to TCP server.
+			socket.write("get_user_files;;" + store.get('login_token') + ";;3");
+ 		});
+
+		socket.on("data", function (buffer) {
+			files_json = buffer.toString();
+			files = JSON.parse(files_json)
+			mainWindow.webContents.send('files', files);
+			console.log(files);
+			socket.end();
+		});
+	} catch (e) {
+		console.log(e);
+	}
 }
 
 // Form submissions
@@ -472,5 +490,3 @@ function recieve_file () {
 		}, 2000);
 	});
 }
-
-logout();
