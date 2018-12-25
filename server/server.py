@@ -79,12 +79,12 @@ def get_user_files (conn, login_token, limit) :
             tmp_file = {}
             tmp_file['id'] = file[0]
             tmp_file['name'] = file[1]
+            tmp_file['extension'] = file[6][1:]
             files.append(tmp_file)
         
         send_socket_msg(conn, json.dumps(files))
 
-def get_user_devices (conn) :
-    login_token = unquote(get_socket_msg(conn))
+def get_user_devices (conn, login_token) :
     user_id = str(get_user_id_by_login_token(login_token, db))
 
     if user_id is not 'False' :
@@ -163,8 +163,7 @@ while True :
     elif action == "signup_device" :
         signup_device(conn)
     elif action == "get_user_devices" :
-        print('hehehe')
-        get_user_devices(conn)
+        get_user_devices(conn, tokens[1])
     elif action == "delete_device" :
         delete_device(conn)
     elif action == "update_device_ip" :

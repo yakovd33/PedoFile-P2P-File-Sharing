@@ -239,8 +239,7 @@ function update_devices_list () {
 		var c = net.createConnection(SERVER_PORT, SERVER_IP);
 		c.on("connect", function() {
 			// connected to TCP server.
-			c.write("get_user_devices");
-			c.write(store.get('login_token')); // Login token
+			c.write("get_user_devices;;" + store.get('login_token'));
 		});
 
 		c.on("data", function (devices_json) {

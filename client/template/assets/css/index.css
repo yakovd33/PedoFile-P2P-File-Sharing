@@ -9,6 +9,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    cursor: pointer;
 }
 
 .recent-item-pic {
@@ -46,10 +47,11 @@
 }
 
 .recent-item-pic .recent-item-pic  {
-    height: 100px;
-    width: 100%;
-    background-size: cover;
-    background-position: center;
+  height: 100px;
+  width: 100%;
+  background-size: 29%;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Device management */
@@ -415,6 +417,7 @@
     font-size: 11px;
     letter-spacing: 0.04em;
     font-weight: 200;
+    padding-left: 31px;
   }
   .ui-card .device-legend li {
     display: inline-block;
@@ -858,4 +861,48 @@
 
 .fab--book-holiday #floating-button {
     position: absolute;
+}
+
+/* Recent item context menu */
+.context-menu {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  padding: 12px 0;
+  width: 240px;
+  background-color: #fff;
+  border: solid 1px #ebebeb;
+  box-shadow: 0px 0px 18px #94949440;
+  border-radius: 4px;
+}
+
+.context-menu--active {
+  display: block;
+}
+
+.context-menu__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu__item {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.context-menu__item:last-child {
+  margin-bottom: 0;
+}
+
+.context-menu__link {
+  display: block;
+  padding: 8px 12px;
+  color: #0066aa;
+  text-decoration: none;
+}
+
+.context-menu__link:hover {
+  color: #444;
+  background-color: #ebebeb;
 }
