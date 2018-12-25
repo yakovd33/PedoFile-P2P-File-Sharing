@@ -143,6 +143,24 @@ def register_file (conn) :
 
         send_socket_msg(conn, 'true')
 
+def get_file_device_details (conn, login_token, file_id) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+
+    if user_id is not 'False' :
+        file_query = db.select_query('files', '`id` = ' + str(file_id) + ' AND `user_id` = ' + str(user_id), '')
+
+        if db.rowCount > 0 :
+            device_id = file_query[0][3]
+            device_query = db.select_query('devices', '`id` = ' + str(device_id) + ' AND `user_id` = ' + str(user_id), '')
+
+            if db.rowCount > 0 :
+                response = {
+                    'ip': device_query[0][5],
+                    'port': device_query[0][6]
+                }
+
+                send_socket_msg(conn, json.dumps(response))
+
 while True :
     conn, addr = s.accept()
     print("Connected by: " , addr)
@@ -170,8 +188,10 @@ while True :
         update_device_ip(conn)
     elif action == "register_file" :
         register_file(conn)
-    elif action == "get_user_files" or tokens[0] == 'get_user_files' :
+    elif action == "get_user_files" :
         get_user_files(conn, tokens[1], tokens[2])
+    elif action == "get_file_device_details" :
+        get_file_device_details(conn, tokens[1], tokens[2])
 
     conn.close()
 

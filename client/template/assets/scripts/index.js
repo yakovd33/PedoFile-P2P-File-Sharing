@@ -240,8 +240,20 @@ electron.ipcRenderer.on('files', function (event, files) {
     }
 
     function menuItemListener( link ) {
-        console.log($(taskItemInContext).data('id'));
-        // console.log($(taskItemInContext));
+        file_id = $(taskItemInContext).data('id');
+        file_name = $(taskItemInContext).data('name');
+        file_extension = $(taskItemInContext).data('extension');
+
+        action = $(link).data('action');
+
+        if (action == 'save') {
+            electron.ipcRenderer.send('save-file', {
+                id: file_id,
+                name: file_name,
+                extension: file_extension
+            });
+        }
+
         toggleMenuOff();
     }
 
