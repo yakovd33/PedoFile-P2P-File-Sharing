@@ -59,6 +59,21 @@ electron.ipcRenderer.on('files', function (event, files) {
         var html = template(context);
         $("#recent-items").append(html);
     });
+
+    $.each($(".recent-item"), function () {
+        $(this).dblclick(function() {
+            file_id = $(this).data('id');
+            file_name = $(this).data('name');
+            file_extension = $(this).data('extension');
+            file = {
+                id: file_id,
+                name: file_name,
+                extension: file_extension
+            };
+            
+            electron.ipcRenderer.send('preview-file', file);
+        });
+    });
 });
 
 // Recent item context menu
@@ -243,15 +258,20 @@ electron.ipcRenderer.on('files', function (event, files) {
         file_id = $(taskItemInContext).data('id');
         file_name = $(taskItemInContext).data('name');
         file_extension = $(taskItemInContext).data('extension');
+        file = {
+            id: file_id,
+            name: file_name,
+            extension: file_extension
+        };
 
         action = $(link).data('action');
 
         if (action == 'save') {
-            electron.ipcRenderer.send('save-file', {
-                id: file_id,
-                name: file_name,
-                extension: file_extension
-            });
+            electron.ipcRenderer.send('save-file', file);
+        }
+
+        if (action == 'preview') {
+            electron.ipcRenderer.send('preview-file', file);
         }
 
         toggleMenuOff();
@@ -262,3 +282,24 @@ electron.ipcRenderer.on('files', function (event, files) {
      */
     init();
 })();
+
+
+electron.ipcRenderer.on('preview', function (event, path) {
+    console.log(path);
+    $("#image-preview").fadeIn();
+    $("#image-preview-img img").attr('src', path);
+});
+
+$("#image-preview-close").click(function () {
+    $("#image-preview").fadeOut();
+});
+
+$("#image-preview-bg").click(function () {
+    $("#image-preview").fadeOut();
+});
+
+$(document).keyup(function(e) {
+    if (e.key === "Escape") {
+        $("#image-preview").fadeOut();
+   }
+});

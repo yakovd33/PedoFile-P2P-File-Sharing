@@ -73,7 +73,7 @@ def get_user_files (conn, login_token, limit) :
     user_id = str(get_user_id_by_login_token(login_token, db))
 
     if user_id is not 'False' :
-        user_files_query = db.select_query('files', 'user_id = ' + user_id, 'LIMIT ' + limit)
+        user_files_query = db.select_query('files', 'user_id = ' + user_id, 'ORDER BY `uploaded` DESC LIMIT ' + limit)
         files = []
         for file in user_files_query :
             tmp_file = {}
@@ -161,6 +161,16 @@ def get_file_device_details (conn, login_token, file_id) :
 
                 send_socket_msg(conn, json.dumps(response))
 
+def get_file_path_by_id (conn, login_token, file_id) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+
+    if user_id is not 'False' :
+        file_query = db.select_query('files', '`id` = ' + str(file_id) + ' AND `user_id` = ' + user_id, '')
+
+        if db.rowCount > 0 :
+            send_socket_msg(conn, file_query[0][7])
+    send_socket_msg(conn, '')
+
 while True :
     conn, addr = s.accept()
     print("Connected by: " , addr)
@@ -192,6 +202,8 @@ while True :
         get_user_files(conn, tokens[1], tokens[2])
     elif action == "get_file_device_details" :
         get_file_device_details(conn, tokens[1], tokens[2])
+    elif action == "get_file_path_by_id" :
+        get_file_path_by_id(conn, tokens[1], tokens[2])
 
     conn.close()
 

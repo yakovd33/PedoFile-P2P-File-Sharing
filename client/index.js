@@ -7,7 +7,8 @@ var os = require('os');
 let externalip = require('externalip');
 var fs = require('fs');
 var path = require('path');
-const { dialog } = require('electron')
+const { dialog } = require('electron');
+var tmp = require('tmp');
 
 // file_listen();
 
@@ -349,7 +350,36 @@ ipc.on('save-file', function (event, file) {
 			dialog.showSaveDialog({
 				defaultPath: '~/' + file.name + '.' + file.extension,
 			}, function (dest) {
-				recieve_file(json.ip, json.port, dest);
+				recieve_file(json.ip, json.port, dest, file.id, false);
+			});
+		});
+	} catch (e) {
+		console.log(e);
+	}
+});
+
+ipc.on('preview-file', function (event, file) {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("get_file_device_details;;" + store.get('login_token') + ";;" + file.id);
+		});
+
+		c.on("data", function (buffer) {
+			buffer = buffer.toString();
+			json = JSON.parse(buffer);
+			console.log(json);
+			c.end();
+
+			tmp.file(function _tempFileCreated(err, path, fd, cleanupCallback) {
+				if (!err) {
+					recieve_file(json.ip, json.port, path, file.id, true);
+
+					// setTimeout(cleanupCallback, 2000);
+				} else {
+					console.log(err);
+				}
 			});
 		});
 	} catch (e) {
@@ -388,19 +418,35 @@ function file_listen () {
 	var server = net.createServer(function(connection) {
 		console.log('client connected');
 	
-		connection.on('close', function (){
+		connection.on('end', function (msg) {
 			console.log('client disconnected');
 		 });
 	
-		connection.on('data', function (data) {
-			data = data.toString();
-			console.log('client sended the folowing string:'+data);
-			connection.write("Response");
-			console.log('Sended responst to client');
-			connection.end();
-			console.log('Disconnected the client.');
+		connection.on('data', function (file_id) {
+			file_id = file_id.toString();
+			
+			// Get file path
+			try {
+				var c = net.createConnection(SERVER_PORT, SERVER_IP);
+				c.on("connect", function() {
+					// console.log('connectedddd');
+					// connected to TCP server.
+					c.write("get_file_path_by_id;;" + store.get('login_token') + ";;" + file_id);
+				});
+		
+				c.on("data", function (path) {
+					path = path.toString();
+					if (path != '') {
+						console.log(path);
+						file_ask_listen(path, connection);
+					}
+		
+					c.end();
+				});
+			} catch (e) {
+				console.log(e);
+			}
 	   });
-	
 	});
 	
 	
@@ -409,17 +455,14 @@ function file_listen () {
 	});
 }
 
-// file_ask_listen();
-// recieve_file();
+file_listen();
 
-function file_ask_listen () {
-	try {
-		var server = net.createServer(function(client){
+function file_ask_listen (path, client) {
+	if (fs.existsSync(path)) {
+		try {
 			var packages = 0;
 			var totalBytes = 0;
-			var filename = "4.jpg";
-			var readStream = fs.createReadStream('C:\\Users\\yakov\\Desktop\\' + filename, {highWaterMark: 16384});
-
+			var readStream = fs.createReadStream(path, {highWaterMark: 16384});
 
 			readStream.on('data', function(chunk) {
 				packages++;    
@@ -431,7 +474,6 @@ function file_ask_listen () {
 				}
 				
 				var size = new Buffer(sizeHex);
-				console.log("size", chunk.length, "hex", sizeHex);
 				var delimiter = new Buffer("@");
 				var pack = Buffer.concat([head, size, chunk, delimiter]);
 				totalBytes += pack.length;
@@ -440,82 +482,80 @@ function file_ask_listen () {
 
 			readStream.on('close', function(){
 				client.end();
-				console.log("total packages", packages);
-				console.log("total bytes sent", totalBytes);
 			});
 			
 			client.on('error', function(){
-				console.log("error del cliente");
+				console.log("file send error");
 			});
 			
 			client.on('close', function(){
-				console.log("terminó comunicación con cliente");
+				console.log("connection closed");
 			});
-		});
-		
-		server.listen(5000);
-		
-		server.on('listening', function(){
-			console.log("servidor escuchando");
-		});
-
-		server.on('error', function(err){
-			console.log("error del servidor");
-		});		  
-	} catch (e) {
-		console.log(e);
+		} catch (e) {
+			console.log(e);
+		}
+	} else {
+		client.end();
 	}
 }
 
-function recieve_file (ip, port, dest) {
+function recieve_file (ip, port, dest, file_id, is_preview) {
 	var socket = new net.Socket();
 	socket.connect(port, ip);
 	var packets = 0;
 	var buffer = new Buffer(0);
 	var filename = '';
 	var not_connected = false;
+	var totalBytes = 0;
+
+	socket.on("connect", function() {
+		socket.write(file_id.toString());
+	});
 
 	socket.on('data', function(chunk) {
 		packets++;
-		console.log(chunk);
 		buffer = Buffer.concat([buffer, chunk]);
+		totalBytes += buffer.length;
 	});
 
 	socket.on('close', function(){
 		if (!not_connected) {
-			console.log("total packages", packets);
+			if (totalBytes > 0) {
+				// var writeStream = fs.createWriteStream(path.join(__dirname, "out.jpg"));
+				var writeStream = fs.createWriteStream(dest);
 
-			// var writeStream = fs.createWriteStream(path.join(__dirname, "out.jpg"));
-			var writeStream = fs.createWriteStream(dest);
-			console.log("buffer size", buffer.length);
-			while (buffer.length) {
-				var head = buffer.slice(0, 4);
+				while (buffer.length) {
+					var head = buffer.slice(0, 4);
 
-				console.log("head", head.toString());
-				if(head.toString() != "FILE"){
-					console.log("ERROR!!!!");
-					process.exit(1);
+					if(head.toString() != "FILE"){
+						console.log("ERROR!!!!");
+						process.exit(1);
+					}
+					var sizeHex = buffer.slice(4, 8);
+					var size = parseInt(sizeHex, 16);
+
+					var content = buffer.slice(8, size + 8);
+					var delimiter = buffer.slice(size + 8, size + 9);
+					// console.log("delimiter", delimiter.toString());
+					// if(delimiter != "@"){
+					// 	console.log("wrong delimiter!!!");
+					// 	process.exit(1);
+					// }
+
+					writeStream.write(content);
+					buffer = buffer.slice(size + 9);
 				}
-				var sizeHex = buffer.slice(4, 8);
-				var size = parseInt(sizeHex, 16);
 
-				console.log("size", size);
+				if (is_preview) {
+					mainWindow.webContents.send('preview', dest);
+				}
 
-				var content = buffer.slice(8, size + 8);
-				var delimiter = buffer.slice(size + 8, size + 9);
-				// console.log("delimiter", delimiter.toString());
-				// if(delimiter != "@"){
-				// 	console.log("wrong delimiter!!!");
-				// 	process.exit(1);
-				// }
-
-				writeStream.write(content);
-				buffer = buffer.slice(size + 9);
+				setTimeout(function(){
+					writeStream.end();
+				}, 2000);
+			} else {
+				console.log('File does not exist');
 			}
-
-			setTimeout(function(){
-				writeStream.end();
-			}, 2000);
 		} else {
 			console.log('Source device is not connected');
 		}

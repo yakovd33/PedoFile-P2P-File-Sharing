@@ -906,3 +906,39 @@
   color: #444;
   background-color: #ebebeb;
 }
+
+#image-preview {
+  display: none;
+}
+
+#image-preview-bg {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 99999999997;
+}
+
+#image-preview-img {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 99999999998;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+#image-preview-img img {
+  max-width: 70%;
+  max-height: 90%;
+}
+
+#image-preview-close {
+  position: fixed;
+  color: #fff;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 99999999999;
+}
