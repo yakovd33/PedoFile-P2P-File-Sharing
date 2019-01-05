@@ -9,6 +9,7 @@ var fs = require('fs');
 var path = require('path');
 const { dialog } = require('electron');
 var tmp = require('tmp');
+const md5File = require('md5-file')
 
 // file_listen();
 
@@ -387,6 +388,95 @@ ipc.on('preview-file', function (event, file) {
 	}
 });
 
+ipc.on('save-version-file', function (event, file) {
+	save_file_version(file.id, file.extension, file.path);
+});
+
+ipc.on('show-versions-file', function (event, file) {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("get_file_versions_list;;" + store.get('login_token') + ";;" + file.id);
+		});
+
+		c.on("data", function (buffer) {
+			buffer = buffer.toString();
+			json = JSON.parse(buffer);
+			mainWindow.webContents.send('versions', json);
+			c.end();
+		});
+	} catch (e) {
+		console.log(e);
+	}
+});
+
+ipc.on('delete_version', function (event, version_id) {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			c.write("delete_version;;" + store.get('login_token') + ";;" + version_id);
+		});
+
+		c.on("close", function (buffer) {
+			buffer = buffer.toString();
+
+			var socket = net.createConnection(SERVER_PORT, SERVER_IP);
+			socket.on("connect", function() {
+				socket.write("get_version_details;;" + store.get('login_token') + ";;" + version_id);
+			});
+
+			socket.on("data", function (buffer) {
+				buffer = buffer.toString();
+				version = JSON.parse(buffer);
+				socket.end();
+				
+				var c = net.createConnection(SERVER_PORT, SERVER_IP);
+				c.on("connect", function() {
+					c.write("get_file_details;;" + store.get('login_token') + ";;" + version[1]);
+				});
+
+				c.on("data", function (buffer) {
+					file = JSON.parse(buffer.toString());
+					file_to_delete = app.getPath('userData') + '\\' + version[2] + file[6];
+					fs.unlink(file_to_delete, (err) => {
+						if (err) throw err;
+						console.log('path/file.txt was deleted');
+					});
+				});
+			});
+		});
+	} catch (e) {
+		console.log(e);
+	}
+});
+
+ipc.on('restore_version', function (event, details) {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("get_file_details;;" + store.get('login_token') + ";;" + details.file_id);
+		});
+
+		c.on("data", function (buffer) {
+			buffer = buffer.toString();
+			json = JSON.parse(buffer);
+			extension = json[6];
+			path = json[7];
+
+			fs.copyFile(details.path, path, (err) => {
+				if (!err) {
+				}
+			});
+
+			c.end();
+		});
+	} catch (e) {
+		console.log(e);
+	}
+});
+
 // Register file in the DB
 function register_file (path) {
 	try {
@@ -399,9 +489,12 @@ function register_file (path) {
 			c.write(path);
 		});
 
-		c.on("data", function (buffer) {
-			buffer = buffer.toString();
-			if (buffer != "error") {
+		c.on("data", function (file) {
+			file = file.toString();
+			if (file != "error") {
+				json = JSON.parse(file)
+				save_file_version(json.id, json.extension, path);
+				update_files_list();
 			}
 
 			c.end();
@@ -567,4 +660,35 @@ function recieve_file (ip, port, dest, file_id, is_preview) {
 			// console.log(error);
 		}
 	})
+}
+
+function save_file_version (file_id, extension, path) {
+	// TODO: DISALLOW USERS TO SAVE THE SAME VERSION MORE THAN ONCE
+
+	try {
+		md5File(path, (err, hash) => {
+			if (!err) {
+				dest = app.getPath('userData') + '\\' + hash + '.' + extension;
+
+				fs.copyFile(path, dest, (err) => {
+					if (!err) {
+						var c = net.createConnection(SERVER_PORT, SERVER_IP);
+						c.on("connect", function() {
+							// connected to TCP server.
+							c.write("save_file_version;;" + store.get('login_token') + ";;" + file_id + ";;" + hash + ";;" + dest);
+						});
+
+						c.on("data", function (buffer) {
+							buffer = buffer.toString();
+							c.end();
+						});
+					}
+				});
+			} else {
+				console.log('File does not exists or there was another error!');
+			}
+		});
+	} catch (e) {
+		console.log(e);
+	}
 }

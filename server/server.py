@@ -80,6 +80,7 @@ def get_user_files (conn, login_token, limit) :
             tmp_file['id'] = file[0]
             tmp_file['name'] = file[1]
             tmp_file['extension'] = file[6][1:]
+            tmp_file['path'] = file[7]
             files.append(tmp_file)
         
         send_socket_msg(conn, json.dumps(files))
@@ -141,7 +142,12 @@ def register_file (conn) :
             # Register the file
             db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "' )")
 
-        send_socket_msg(conn, 'true')
+            resp = {
+                'id': db.lastInsertId,
+                'extension': file_extension,
+            }
+
+            send_socket_msg(conn, json.dumps(resp))
 
 def get_file_device_details (conn, login_token, file_id) :
     user_id = str(get_user_id_by_login_token(login_token, db))
@@ -169,6 +175,69 @@ def get_file_path_by_id (conn, login_token, file_id) :
 
         if db.rowCount > 0 :
             send_socket_msg(conn, file_query[0][7])
+    send_socket_msg(conn, '')
+
+def save_file_version (conn, login_token, file_id, hash, path) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    file = db.select_query('files', '`id` = ' + file_id, '')
+
+    if str(file[0][2]) == str(user_id) :
+        if user_id is not 'False' :
+            db.query("INSERT INTO `file_versions` (`file_id`, `md5`, `path`) VALUES (" + file_id + ", '" + hash + "', '" + path + "')")
+
+    send_socket_msg(conn, '')
+
+def get_file_versions_list (conn, login_token, file_id) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    file = db.select_query('files', '`id` = ' + file_id, '')
+
+    if str(file[0][2]) == str(user_id) :
+        if user_id is not 'False' :
+            versions_stmt = db.select_query('file_versions', '`file_id` = ' + str(file_id), 'ORDER BY `date` DESC')
+            versions = []
+            
+            for version in versions_stmt :
+                tmp_version = {
+                    'id': version[0],
+                    'file_id': version[1],
+                    'hash': version[2],
+                    'path': version[3],
+                    'date': version[4]
+                }
+
+                versions.append(tmp_version)
+
+    send_socket_msg(conn, json.dumps(versions))
+
+def delete_version (conn, login_token, version_id) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    version = db.select_query('file_versions', '`id` = ' + version_id, '')
+    file = db.select_query('files', '`id` = ' + str(version[0][1]), '')
+
+    if str(file[0][2]) == str(user_id) :
+        if user_id is not 'False' :
+            db.query("DELETE FROM `file_versions` WHERE `id` = " + str(version_id))
+            send_socket_msg(conn, '')
+
+    send_socket_msg(conn, '')
+
+def get_file_details (conn, login_token, file_id) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    file = db.select_query('files', '`id` = ' + str(file_id), '')
+
+    if str(file[0][2]) == str(user_id) :
+        if user_id is not 'False' :
+            send_socket_msg(conn, json.dumps(file[0]))
+    send_socket_msg(conn, '')
+
+def get_version_details (conn, login_token, version_id) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    version = db.select_query('file_versions', '`id` = ' + version_id, '')
+    file = db.select_query('files', '`id` = ' + str(version[0][1]), '')
+
+    if str(file[0][2]) == str(user_id) :
+        if user_id is not 'False' :
+            send_socket_msg(conn, json.dumps(version[0]))
     send_socket_msg(conn, '')
 
 while True :
@@ -204,6 +273,16 @@ while True :
         get_file_device_details(conn, tokens[1], tokens[2])
     elif action == "get_file_path_by_id" :
         get_file_path_by_id(conn, tokens[1], tokens[2])
+    elif action == "save_file_version" :
+        save_file_version(conn, tokens[1], tokens[2], tokens[3], tokens[4])
+    elif action == "get_file_versions_list" :
+        get_file_versions_list(conn, tokens[1], tokens[2])
+    elif action == "delete_version" :
+        delete_version(conn, tokens[1], tokens[2])
+    elif action == "get_file_details" :
+        get_file_details(conn, tokens[1], tokens[2])
+    elif action == "get_version_details" :
+        get_version_details(conn, tokens[1], tokens[2])
 
     conn.close()
 

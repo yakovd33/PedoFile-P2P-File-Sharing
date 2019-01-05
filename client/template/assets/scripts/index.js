@@ -52,10 +52,12 @@ electron.ipcRenderer.on('devices', function (event, devices) {
 });
 
 electron.ipcRenderer.on('files', function (event, files) {
+    $("#recent-items").html('');
+    
     files.forEach(file => {
         var source = document.getElementById("file-template").innerHTML;
         var template = Handlebars.compile(source);
-        var context = { id: file.id, name: file.name, extension: file.extension };
+        var context = { id: file.id, name: file.name, extension: file.extension, path: file.path };
         var html = template(context);
         $("#recent-items").append(html);
     });
@@ -258,21 +260,18 @@ electron.ipcRenderer.on('files', function (event, files) {
         file_id = $(taskItemInContext).data('id');
         file_name = $(taskItemInContext).data('name');
         file_extension = $(taskItemInContext).data('extension');
+        file_path = $(taskItemInContext).data('path');
+
         file = {
             id: file_id,
             name: file_name,
-            extension: file_extension
+            extension: file_extension,
+            path: file_path
         };
 
         action = $(link).data('action');
-
-        if (action == 'save') {
-            electron.ipcRenderer.send('save-file', file);
-        }
-
-        if (action == 'preview') {
-            electron.ipcRenderer.send('preview-file', file);
-        }
+        
+        electron.ipcRenderer.send(action + '-file', file);
 
         toggleMenuOff();
     }
@@ -302,4 +301,39 @@ $(document).keyup(function(e) {
     if (e.key === "Escape") {
         $("#image-preview").fadeOut();
    }
+});
+
+electron.ipcRenderer.on('versions', function (event, versions) {
+    $("#file-version-list-list").html('');
+
+    versions.forEach(version => {
+        var source = document.getElementById("file-version-list-item-template").innerHTML;
+        var template = Handlebars.compile(source);
+        version_path = version.path.replace(/\\/g, '\\\\');
+        var context = { id: version.id, file_id: version.file_id, date: version.date, hash: version.hash, path: version_path };
+        var html = template(context);
+
+        $("#file-version-list-list").append(html);
+    });
+
+    $("#file-version-list").show();
+});
+
+function delete_version (version_id) {
+    electron.ipcRenderer.send('delete_version', version_id);    
+}
+
+function restore_version (file_id, version_id, hash, path) {
+    electron.ipcRenderer.send('restore_version', {
+        file_id: file_id,
+        version_id: version_id,
+        hash: hash,
+        path: path
+    });
+
+    $("#file-version-list-bg").click();
+}
+
+$("#file-version-list-bg").click(function () {
+    $("#file-version-list").hide();
 });

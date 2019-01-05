@@ -30,6 +30,7 @@
     "electron-store": "^2.0.0",
     "express": "^4.16.4",
     "externalip": "^1.0.2",
+    "md5-file": "^4.0.0",
     "nan": "^2.11.1",
     "node-gyp": "^3.8.0",
     "tmp": "0.0.33"

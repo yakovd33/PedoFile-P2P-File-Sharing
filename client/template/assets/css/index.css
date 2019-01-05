@@ -907,11 +907,14 @@
   background-color: #ebebeb;
 }
 
-#image-preview {
+#image-preview, #file-version-list {
   display: none;
 }
 
-#image-preview-bg {
+#file-version-list {
+}
+
+#image-preview-bg, #file-version-list-bg {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -941,4 +944,51 @@
   padding: 10px;
   cursor: pointer;
   z-index: 99999999999;
+}
+
+#file-version-list-list {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 80%;
+  overflow-y: auto;
+  padding: 20px;
+  background: #fff;
+  z-index: 9999999999;
+  border-radius: 6px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.versions-list-item {
+  padding: 10px;
+  position: relative;
+}
+
+.versions-options {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.version-item-hash {
+  position: absolute;
+  left: 10px;
+  top: 0;
+  font-size: 0.7rem;
+}
+
+.version-item-date {
+  font-weight: bold;
+  color: #696969;
+  margin-top: 3px;
+}
+
+.context-menu-sep {
+  width: 100%;
+  height: 1px;
+  background-color: #ebebeb;
+  margin-bottom: 5px;
 }

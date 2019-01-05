@@ -13,6 +13,7 @@
 		<script src="assets/scripts/handlebars-v4.0.12.js"></script>
 		<script src="assets/scripts/templating.js"></script>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
 	</head>
 	<body class="app">
 		<div id="container-floating" class="fab--book-holiday" data-toggle="manualtooltip" data-trigger="manual" data-placement="left" title="Book time off">
@@ -172,6 +173,16 @@
 				<li class="context-menu__item">
 					<a href="#" class="context-menu__link" data-action="save"><i class="fa fa-times"></i> Save As</a>
 				</li>
+
+				<div class="context-menu-sep"></div>
+
+				<li class="context-menu__item">
+					<a href="#" class="context-menu__link" data-action="save-version"><i class="fa fa-times"></i> Save Version</a>
+				</li>
+
+				<li class="context-menu__item">
+					<a href="#" class="context-menu__link" data-action="show-versions"><i class="fa fa-times"></i> Show Versions</a>
+				</li>
 			</ul>
 		</nav>
 
@@ -183,9 +194,28 @@
 			</div>
 		</div>
 
+		<div id="file-version-list">
+			<div id="file-version-list-bg"></div>
+			<div id="file-version-list-list">
+				
+			</div>
+		</div>
+
+		<script id="file-version-list-item-template" type="text/x-handlebars-template">
+			<div class="versions-list-item">
+				<div class="version-item-date">{{ date }}</div>
+				<div class="version-item-hash">{{ hash }}</div>
+
+				<div class="versions-options">
+					<button class="delete-version version-option btn cur-p btn-danger" onclick="$(this).parent().parent().remove(); delete_version({{ id }})" title="Delete this version" data-versionid="{{ id }}"><span class="ti-trash"></span></button>
+					<button class="restore-version version-option btn cur-p btn-info" onclick="restore_version({{ file_id }}, {{ id }}, '{{ hash }}', '{{ path }}')" title="Restore to this version" data-versionid="{{ id }}"><i class="fas fa-undo-alt"></i></button>
+				</div>
+			</div>
+		</script>
+
 		<script id="file-template" type="text/x-handlebars-template">
 			<div class="col-md-3">
-				<div class="recent-item recent-item-pic" data-id="{{ id }}" data-name="{{ name }}" data-extension="{{ extension }}">
+				<div class="recent-item recent-item-pic" data-id="{{ id }}" data-name="{{ name }}" data-path="{{ path }}" data-extension="{{ extension }}">
 					<div class="recent-item-pic" style="background-image: url('assets/images/extensions/{{ extension }}.png')"></div>
 					<div class="recent-item-title">
 						<div class="recent-item-content-type-icon"><img src="assets/images/extensions/{{ extension }}.png"></div>
