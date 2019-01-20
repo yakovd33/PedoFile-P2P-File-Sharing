@@ -82,9 +82,7 @@ function login (email, password) {
 		var c = net.createConnection(SERVER_PORT, SERVER_IP);
 		c.on("connect", function() {
 			// connected to TCP server.
-			c.write("login");
-			c.write(email);
-			c.write(password);
+			c.write("login;;" + email + ";;" + password);
 		});
 
 		c.on("data", function (buffer) {
