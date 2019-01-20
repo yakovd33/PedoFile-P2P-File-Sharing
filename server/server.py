@@ -126,11 +126,8 @@ def update_device_ip (conn) :
 
         send_socket_msg(conn, 'true')
 
-def register_file (conn) :
-    login_token = unquote(get_socket_msg(conn))
-    device_id = unquote(get_socket_msg(conn))
+def register_file (conn, login_token, device_id, path) :
     user_id = str(get_user_id_by_login_token(login_token, db))
-    path = unquote(get_socket_msg(conn))
 
     if user_id is not 'False' :
         filename_w_ext = os.path.basename(path)
@@ -266,7 +263,7 @@ while True :
     elif action == "update_device_ip" :
         update_device_ip(conn)
     elif action == "register_file" :
-        register_file(conn)
+        register_file(conn, tokens[1], tokens[2], tokens[3])
     elif action == "get_user_files" :
         get_user_files(conn, tokens[1], tokens[2])
     elif action == "get_file_device_details" :

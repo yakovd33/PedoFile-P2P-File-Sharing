@@ -261,7 +261,7 @@ function update_files_list () {
 		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
 		socket.on("connect", function() {
 			// connected to TCP server.
-			socket.write("get_user_files;;" + store.get('login_token') + ";;3");
+			socket.write("get_user_files;;" + store.get('login_token') + ";;4");
  		});
 
 		socket.on("data", function (buffer) {
@@ -319,19 +319,39 @@ ipc.on('select_file', function (event, device_id) {
 	files = dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] });
 
 	i = 0;
-	if (files.length) {
-		files.forEach(file => {
-			i++;
+	if (files) {
+		if (files.length) {
+			files.forEach(file => {
+				i++;
 
-			setTimeout(function () {
-				register_file(file);
-			}, 300 * i);
-		});
+				setTimeout(function () {
+					register_file(file);
+				}, 300 * i);
+			});
+		}
 	}
 });
 
 ipc.on('select_folder', function (event, device_id) {
-	folders = dialog.showOpenDialog({ properties: ['openFile', 'openDirectory', 'multiSelections'] });
+	i = 0;
+	folders = dialog.showOpenDialog({ properties: [ 'openFile', 'openDirectory', 'multiSelections' ] }, function (folder) {
+		i++;
+		console.log(folder);
+		setTimeout(function () {
+			fs.readdir(folder.toString(), function(err, dir) {
+				j = 0;
+
+				for(let path of dir) {
+					j++;
+
+					setTimeout(function () {
+						console.log(folder + '\\' + path);
+						register_file(folder + '\\' + path);
+					}, j * 500);
+				}
+			});
+		}, i * 1000);
+	});
 });
 
 ipc.on('save-file', function (event, file) {
@@ -483,10 +503,7 @@ function register_file (path) {
 		var c = net.createConnection(SERVER_PORT, SERVER_IP);
 		c.on("connect", function() {
 			// connected to TCP server.
-			c.write("register_file");
-			c.write(store.get('login_token')) // Login token
-			c.write(store.get('device_id')) // Device token
-			c.write(path);
+			c.write("register_file;;" + store.get('login_token') + ";;" + store.get('device_id') + ";;" + path);
 		});
 
 		c.on("data", function (file) {
