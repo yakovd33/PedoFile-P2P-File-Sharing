@@ -497,6 +497,32 @@ ipc.on('restore_version', function (event, details) {
 	}
 });
 
+
+ipc.on('auto-sync-file', function (event, details) {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("auto-sync-file;;" + store.get('login_token') + ";;" + details.file_id + details.device_id);
+		});
+
+		c.on("data", function (buffer) {
+
+			c.end();
+		});
+	} catch (e) {
+		console.log(e);
+	}
+});
+
+ipc.on('sync-file', function (event, details) {
+	try {
+
+	} catch (e) {
+		console.log(e);
+	}
+});
+
 // Register file in the DB
 function register_file (path) {
 	try {
