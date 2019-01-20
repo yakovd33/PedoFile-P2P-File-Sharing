@@ -23,10 +23,7 @@ def get_socket_msg (conn) :
 def send_socket_msg (conn, msg) :
     conn.send(msg.encode())
 
-def login (conn) :
-    email = unquote(get_socket_msg(conn))
-    password = get_socket_msg(conn)
-    
+def login (conn, email, password) :
     user_query = db.select_query('users', "`email` = '" + email + "' AND `password_hashed` = '" + password_hash(password) + "'", '')
     if (db.rowCount > 0) :
         # Insert login token
@@ -251,7 +248,7 @@ while True :
     print(tokens)
 
     if action == "login" :
-        login(conn)
+        login(conn, tokens[1], tokens[2])
     elif action == "signup" :
         signup(conn)
     elif action == "signup_device" :
