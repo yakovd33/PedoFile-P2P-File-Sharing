@@ -503,7 +503,7 @@ ipc.on('auto-sync-file', function (event, details) {
 		var c = net.createConnection(SERVER_PORT, SERVER_IP);
 		c.on("connect", function() {
 			// connected to TCP server.
-			c.write("auto-sync-file;;" + store.get('login_token') + ";;" + details.file_id + details.device_id);
+			c.write("auto-sync-file;;" + store.get('login_token') + ";;" + details.file_id + ";;" + store.get('device_id'));
 		});
 
 		c.on("data", function (buffer) {
