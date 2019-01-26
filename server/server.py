@@ -215,6 +215,20 @@ def delete_version (conn, login_token, version_id) :
 
     send_socket_msg(conn, '')
 
+def auto_sync (conn, login_token, file_id, device_id) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    file = db.select_query('files', '`id` = ' + file_id, '')
+    db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
+
+    if db.rowCount > 0 :
+        if str(file[0][2]) == str(user_id) :
+            if user_id is not 'False' :
+                db.select_query('auto_update', '`device_id` = ' + device_id + " AND `file_id` = " + file_id, '')
+                if db.rowCount > 0:
+                    db.query("DELETE FROM `auto_update` WHERE `device_id` = " + str(device_id) + " AND `file_id` = " + str(file_id))
+                else:
+                    db.query("INSERT INTO `auto_update` (`device_id`, `file_id`) VALUES (" + device_id + ", '" + file_id + "')")
+
 def get_file_details (conn, login_token, file_id) :
     user_id = str(get_user_id_by_login_token(login_token, db))
     file = db.select_query('files', '`id` = ' + str(file_id), '')
@@ -277,7 +291,8 @@ while True :
         get_file_details(conn, tokens[1], tokens[2])
     elif action == "get_version_details" :
         get_version_details(conn, tokens[1], tokens[2])
-
+    elif action == "auto_sync":
+        auto_sync(conn, tokens[1], tokens[2], tokens[3])
     conn.close()
 
 s.close()
