@@ -504,7 +504,16 @@ ipc.on('auto-sync-file', function (event, details) {
 
 ipc.on('sync-file', function (event, details) {
 	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("sync_file;;" + store.get('login_token') + ";;" + details.file_id + ";;" + store.get('device_id'));
+		});
 
+		c.on("data", function (buffer) {
+
+			c.end();
+		});
 	} catch (e) {
 		console.log(e);
 	}

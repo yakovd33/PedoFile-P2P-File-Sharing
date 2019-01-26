@@ -232,6 +232,7 @@ def auto_sync (conn, login_token, file_id, device_id, path) :
                     db.query("DELETE FROM `auto_update` WHERE `device_id` = " + str(device_id) + " AND `file_id` = " + str(file_id))
                 else:
                     db.query("INSERT INTO `auto_update` (`device_id`, `file_id`, `path`, `source_device_id`) VALUES (" + device_id + ", '" + file_id + "', '" + path + "', " + str(source_device_id) + ")")
+                    db.query("INSERT INTO `auto_update` (`device_id`, `file_id`) VALUES (" + device_id + ", '" + file_id + "')")
 
 def get_file_details (conn, login_token, file_id) :
     user_id = str(get_user_id_by_login_token(login_token, db))
@@ -369,6 +370,7 @@ while True :
         pend_file_to_synced_devices(conn, tokens[1], tokens[2], tokens[3])
     elif action == "get_device_pending_update_files" :
         get_device_pending_update_files(conn, tokens[1], tokens[2])
+
 
     conn.close()
 
