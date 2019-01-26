@@ -9,7 +9,9 @@ var fs = require('fs');
 var path = require('path');
 const { dialog } = require('electron');
 var tmp = require('tmp');
-const md5File = require('md5-file')
+const md5File = require('md5-file');
+
+console.log(app.getPath('userData'));
 
 // file_listen();
 
@@ -501,7 +503,7 @@ ipc.on('auto-sync-file', function (event, details) {
 		var c = net.createConnection(SERVER_PORT, SERVER_IP);
 		c.on("connect", function() {
 			// connected to TCP server.
-			c.write("auto-sync-file;;" + store.get('login_token') + ";;" + details.file_id + ";;" + store.get('device_id'));
+			c.write("auto-sync-file;;" + store.get('login_token') + ";;" + details.id + ";;" + store.get('device_id'));
 		});
 
 		c.on("data", function (buffer) {
