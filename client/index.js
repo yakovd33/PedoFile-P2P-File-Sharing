@@ -10,8 +10,7 @@ var path = require('path');
 const { dialog } = require('electron');
 var tmp = require('tmp');
 const md5File = require('md5-file');
-
-console.log(app.getPath('userData'));
+var tcpPortUsed = require('tcp-port-used');
 
 // file_listen();
 
@@ -355,28 +354,11 @@ ipc.on('select_folder', function (event, device_id) {
 });
 
 ipc.on('save-file', function (event, file) {
-	try {
-		var c = net.createConnection(SERVER_PORT, SERVER_IP);
-		c.on("connect", function() {
-			// connected to TCP server.
-			c.write("get_file_device_details;;" + store.get('login_token') + ";;" + file.id);
-		});
-
-		c.on("data", function (buffer) {
-			buffer = buffer.toString();
-			json = JSON.parse(buffer);
-			console.log(json);
-			c.end();
-
-			dialog.showSaveDialog({
-				defaultPath: '~/' + file.name + '.' + file.extension,
-			}, function (dest) {
-				recieve_file(json.ip, json.port, dest, file.id, false);
-			});
-		});
-	} catch (e) {
-		console.log(e);
-	}
+	dialog.showSaveDialog({
+		defaultPath: '~/' + file.name + '.' + file.extension,
+	}, function (dest) {
+		save_file(file, dest);
+	});
 });
 
 ipc.on('preview-file', function (event, file) {
@@ -499,20 +481,25 @@ ipc.on('restore_version', function (event, details) {
 
 
 ipc.on('auto-sync-file', function (event, details) {
-	try {
-		var c = net.createConnection(SERVER_PORT, SERVER_IP);
-		c.on("connect", function() {
-			// connected to TCP server.
-			c.write("auto-sync-file;;" + store.get('login_token') + ";;" + details.id + ";;" + store.get('device_id'));
-		});
+	dialog.showSaveDialog({
+		defaultPath: '~/' + details.name + '.' + details.extension,
+	}, function (dest) {
+		save_file(details, dest);
 
-		c.on("data", function (buffer) {
+		try {
+			var c = net.createConnection(SERVER_PORT, SERVER_IP);
+			c.on("connect", function() {
+				// connected to TCP server.
+				c.write("auto-sync-file;;" + store.get('login_token') + ";;" + details.id + ";;" + store.get('device_id') + ";;" + dest);
+			});
 
-			c.end();
-		});
-	} catch (e) {
-		console.log(e);
-	}
+			c.on("data", function (buffer) {
+				c.end();
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	});
 });
 
 ipc.on('sync-file', function (event, details) {
@@ -526,21 +513,23 @@ ipc.on('sync-file', function (event, details) {
 // Register file in the DB
 function register_file (path) {
 	try {
-		var c = net.createConnection(SERVER_PORT, SERVER_IP);
-		c.on("connect", function() {
-			// connected to TCP server.
-			c.write("register_file;;" + store.get('login_token') + ";;" + store.get('device_id') + ";;" + path);
-		});
+		md5File(path, function (err, hash) {
+			var c = net.createConnection(SERVER_PORT, SERVER_IP);
+			c.on("connect", function() {
+				// connected to TCP server.
+				c.write("register_file;;" + store.get('login_token') + ";;" + store.get('device_id') + ";;" + path + ";;" + hash);
+			});
 
-		c.on("data", function (file) {
-			file = file.toString();
-			if (file != "error") {
-				json = JSON.parse(file)
-				save_file_version(json.id, json.extension, path);
-				update_files_list();
-			}
+			c.on("data", function (file) {
+				file = file.toString();
+				if (file != "error") {
+					json = JSON.parse(file)
+					save_file_version(json.id, json.extension, path);
+					update_files_list();
+				}
 
-			c.end();
+				c.end();
+			});
 		});
 	} catch (e) {
 		console.log(e);
@@ -591,7 +580,14 @@ function file_listen () {
 	});
 }
 
-file_listen();
+tcpPortUsed.check(1234, '127.0.0.1').then(function(inUse) {
+	if (!inUse()) {
+		file_listen();
+	}
+}, function(err) {
+    console.error('Error on check:', err.message);
+});
+
 
 function file_ask_listen (path, client) {
 	if (fs.existsSync(path)) {
@@ -730,6 +726,27 @@ function save_file_version (file_id, extension, path) {
 			} else {
 				console.log('File does not exists or there was another error!');
 			}
+		});
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+function save_file (file, dest) {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("get_file_device_details;;" + store.get('login_token') + ";;" + file.id);
+		});
+
+		c.on("data", function (buffer) {
+			buffer = buffer.toString();
+			json = JSON.parse(buffer);
+			console.log(json);
+			c.end();
+
+			recieve_file(json.ip, json.port, dest, file.id, false);
 		});
 	} catch (e) {
 		console.log(e);
