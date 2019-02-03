@@ -11,6 +11,7 @@ const { dialog } = require('electron');
 var tmp = require('tmp');
 const md5File = require('md5-file');
 var tcpPortUsed = require('tcp-port-used');
+<<<<<<< HEAD
 var virustotal = require('node-virustotal');
 
 // VirusTotal
@@ -19,6 +20,8 @@ vtconn.setKey("5dcce6e2a727e29ff559c69cd2ffcb26310f678cd307e50c7d116b54726a2879"
 console.log("VirusTotal API: " + vtconn.getKey());
 vtconn.setDelay(15000);
 console.log("VirusTotal Delay: " + vtconn.getDelay());
+=======
+>>>>>>> f695e1fd4e0c90fa9996fd35c98afb7d61d05483
 
 // file_listen();
 
@@ -498,7 +501,11 @@ ipc.on('auto-sync-file', function (event, details) {
 			var c = net.createConnection(SERVER_PORT, SERVER_IP);
 			c.on("connect", function() {
 				// connected to TCP server.
+<<<<<<< HEAD
 				c.write("auto_sync_file;;" + store.get('login_token') + ";;" + details.id + ";;" + store.get('device_id') + ";;" + dest);
+=======
+				c.write("auto-sync-file;;" + store.get('login_token') + ";;" + details.id + ";;" + store.get('device_id') + ";;" + dest);
+>>>>>>> f695e1fd4e0c90fa9996fd35c98afb7d61d05483
 			});
 
 			c.on("data", function (buffer) {
@@ -530,6 +537,7 @@ ipc.on('sync-file', function (event, details) {
 // Register file in the DB
 function register_file (path) {
 	try {
+<<<<<<< HEAD
 		var file_hash = md5File.sync(path);
 		vtconn.getFileReport(file_hash, function(data){
 			//console.log(data);
@@ -564,6 +572,26 @@ function register_file (path) {
 			//TODO: add user popup
 			console.log("VirusTotal: viruses founded!");
 		}
+=======
+		md5File(path, function (err, hash) {
+			var c = net.createConnection(SERVER_PORT, SERVER_IP);
+			c.on("connect", function() {
+				// connected to TCP server.
+				c.write("register_file;;" + store.get('login_token') + ";;" + store.get('device_id') + ";;" + path + ";;" + hash);
+			});
+
+			c.on("data", function (file) {
+				file = file.toString();
+				if (file != "error") {
+					json = JSON.parse(file)
+					save_file_version(json.id, json.extension, path);
+					update_files_list();
+				}
+
+				c.end();
+			});
+		});
+>>>>>>> f695e1fd4e0c90fa9996fd35c98afb7d61d05483
 	} catch (e) {
 		console.log(e);
 	}
