@@ -23,6 +23,15 @@ def get_user_id_by_login_token (token, db) :
     else :
         return False
 
+def get_file_by_id (id, db) :
+    row = db.select_query('files', '`id` = ' + str(id), '')
+    print(db.rowCount)
+
+    if db.rowCount > 0 :
+        return row[0]
+    else :
+        return False
+
 def get_timestamp () :
     return datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
 

@@ -123,7 +123,7 @@ def update_device_ip (conn) :
 
         send_socket_msg(conn, 'true')
 
-def register_file (conn, login_token, device_id, path) :
+def register_file (conn, login_token, device_id, path, md5) :
     user_id = str(get_user_id_by_login_token(login_token, db))
 
     if user_id is not 'False' :
@@ -134,7 +134,7 @@ def register_file (conn, login_token, device_id, path) :
         db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
         if db.rowCount > 0 :
             # Register the file
-            db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "' )")
+            db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`, `md5`, `auto_update`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "', '" + md5 + "', 0)")
 
             resp = {
                 'id': db.lastInsertId,
@@ -215,7 +215,7 @@ def delete_version (conn, login_token, version_id) :
 
     send_socket_msg(conn, '')
 
-def auto_sync (conn, login_token, file_id, device_id) :
+def auto_sync (conn, login_token, file_id, device_id, path) :
     user_id = str(get_user_id_by_login_token(login_token, db))
     file = db.select_query('files', '`id` = ' + file_id, '')
     db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
@@ -223,10 +223,15 @@ def auto_sync (conn, login_token, file_id, device_id) :
     if db.rowCount > 0 :
         if str(file[0][2]) == str(user_id) :
             if user_id is not 'False' :
+                # Get source device id
+                source_device_id_stmt = db.select_query('files', '`id` = ' + file_id, '')
+                source_device_id = source_device_id_stmt[0][3]
+
                 db.select_query('auto_update', '`device_id` = ' + device_id + " AND `file_id` = " + file_id, '')
                 if db.rowCount > 0:
                     db.query("DELETE FROM `auto_update` WHERE `device_id` = " + str(device_id) + " AND `file_id` = " + str(file_id))
                 else:
+                    db.query("INSERT INTO `auto_update` (`device_id`, `file_id`, `path`, `source_device_id`) VALUES (" + device_id + ", '" + file_id + "', '" + path + "', " + str(source_device_id) + ")")
                     db.query("INSERT INTO `auto_update` (`device_id`, `file_id`) VALUES (" + device_id + ", '" + file_id + "')")
 
 def get_file_details (conn, login_token, file_id) :
@@ -247,6 +252,72 @@ def get_version_details (conn, login_token, version_id) :
         if user_id is not 'False' :
             send_socket_msg(conn, json.dumps(version[0]))
     send_socket_msg(conn, '')
+
+def get_user_sync_files (conn, login_token, device_id) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+
+    if user_id is not 'False' :
+        # Check if user is the owner of the device
+        db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
+        if db.rowCount > 0 :
+            files_query = db.select_query('auto_update', '`source_device_id` = ' + str(device_id), 'GROUP BY `file_id`')
+
+            files = []
+            for file in files_query :
+                file = get_file_by_id(file[2], db)
+                if file is not 'False' :
+                    files.append(file)
+                    print(file)
+
+            send_socket_msg(conn, json.dumps(files))
+            return 0
+    send_socket_msg(conn, '')
+
+def pend_file_to_synced_devices (conn, login_token, file_id, new_hash) :
+    # Pend file to synced devices
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    file = get_file_by_id(file_id, db)
+
+    if str(file[2]) == str(user_id) :
+        if user_id is not 'False' :
+            auto_updates = db.select_query('auto_update', '`file_id` = ' + str(file_id), '')
+            
+            for auto_update in auto_updates :
+                device_id = auto_update[1]
+
+                db.query("INSERT INTO `pending_updates` (`file_id`, `dest_device_id`) VALUES (" + file_id + ", " + str(device_id) + ")")
+
+        # Update new MD5
+        db.query("UPDATE `files` SET `md5` = '" + new_hash + "' WHERE `id` = " + str(file_id))
+
+def get_device_pending_update_files (conn, login_token, device_id) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+
+    if user_id is not 'False' :
+        # Check if user is the owner of the device
+        db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
+        if db.rowCount > 0 :
+            pending_updates = db.select_query('pending_updates', '`dest_device_id` = ' + str(device_id), '')
+            
+            file_ids = []
+            # Required Fields: ID, DEST
+
+            for pending_update in pending_updates :
+                # Get the dest of the synced file
+                file_id = pending_update[1]
+                row = db.select_query('auto_update', '`device_id` = ' + str(device_id) + ' AND `file_id` = ' + str(file_id), '')
+
+                if db.rowCount > 0 :
+                    dest = row[0][3]
+                    file_ids.append({
+                        'file_id': file_id,
+                        'dest': dest
+                    })
+
+                # Delete pending change
+                db.query("DELETE FROM `pending_changes` WHERE `id` = " + pending_update[0])
+            
+            send_socket_msg(conn, json.dumps(file_ids))
 
 while True :
     conn, addr = s.accept()
@@ -274,7 +345,7 @@ while True :
     elif action == "update_device_ip" :
         update_device_ip(conn)
     elif action == "register_file" :
-        register_file(conn, tokens[1], tokens[2], tokens[3])
+        register_file(conn, tokens[1], tokens[2], tokens[3], tokens[4])
     elif action == "get_user_files" :
         get_user_files(conn, tokens[1], tokens[2])
     elif action == "get_file_device_details" :
@@ -291,8 +362,16 @@ while True :
         get_file_details(conn, tokens[1], tokens[2])
     elif action == "get_version_details" :
         get_version_details(conn, tokens[1], tokens[2])
-    elif action == "auto_sync":
-        auto_sync(conn, tokens[1], tokens[2], tokens[3])
+    elif action == "auto_sync_file":
+        auto_sync(conn, tokens[1], tokens[2], tokens[3], tokens[4])
+    elif action == "get_user_sync_files" :
+        get_user_sync_files(conn, tokens[1], tokens[2])
+    elif action == "pend_file_to_synced_devices" :
+        pend_file_to_synced_devices(conn, tokens[1], tokens[2], tokens[3])
+    elif action == "get_device_pending_update_files" :
+        get_device_pending_update_files(conn, tokens[1], tokens[2])
+
+
     conn.close()
 
 s.close()
