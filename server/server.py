@@ -134,11 +134,8 @@ def register_file (conn, login_token, device_id, path, md5) :
         db.select_query('devices', '`user_id` = ' + user_id + " AND `id` = " + device_id, '')
         if db.rowCount > 0 :
             # Register the file
-<<<<<<< HEAD
             db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`, `md5`, `auto_update`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "', '" + md5 + "', 0)")
-=======
             db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`, `md5`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "', '" + md5 + "' )")
->>>>>>> f695e1fd4e0c90fa9996fd35c98afb7d61d05483
 
             resp = {
                 'id': db.lastInsertId,
@@ -366,11 +363,7 @@ while True :
         get_file_details(conn, tokens[1], tokens[2])
     elif action == "get_version_details" :
         get_version_details(conn, tokens[1], tokens[2])
-<<<<<<< HEAD
     elif action == "auto_sync_file":
-=======
-    elif action == "auto-sync-file":
->>>>>>> f695e1fd4e0c90fa9996fd35c98afb7d61d05483
         auto_sync(conn, tokens[1], tokens[2], tokens[3], tokens[4])
     elif action == "get_user_sync_files" :
         get_user_sync_files(conn, tokens[1], tokens[2])
