@@ -35,6 +35,7 @@ function dashboard () {
 	ipc.on('did-finish-load', function () {
 		update_files_list();
 		update_devices_list();
+		update_email();
 	
 		// setTimeout(function () {
 		// 	if (is_device_registered()) {
@@ -530,14 +531,16 @@ ipc.on('dnd-upload', function (event, path) {
 function register_file (path) {
 	try {
 		var file_hash = md5File.sync(path);
+		var viruses_found = 0;
 		vtconn.getFileReport(file_hash, function(data){
 			//console.log(data);
 			console.log("Viruses: " + data['positives']);
+			viruses_found = data['positives'];
 
 		  }, function(e){
 			console.log(e);
 		  });
-		if(data['positives'] == 0)
+		if(viruses_found == 0)
 		{
 			md5File(path, function (err, hash) {
 				var c = net.createConnection(SERVER_PORT, SERVER_IP);
@@ -561,7 +564,8 @@ function register_file (path) {
 		else
 		{
 			//TODO: add user popup
-			console.log("VirusTotal: viruses founded!");
+			dialog.showErrorBox("Virus Found!", viruses_found + " Viruses Founded!");
+			console.log("VirusTotal: " + viruses_found + " viruses founded!");
 		}
 
 		md5File(path, function (err, hash) {
@@ -798,6 +802,25 @@ function save_file (file, dest) {
 			c.end();
 
 			recieve_file(json.ip, json.port, dest, file.id, false);
+		});
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+function update_email () {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("get_user_email;;" + store.get('login_token'));
+		});
+
+		c.on("data", function (email) {
+			c.end();
+
+			mainWindow.webContents.send('email', email.toString())
+			console.log(email.toString())
 		});
 	} catch (e) {
 		console.log(e);

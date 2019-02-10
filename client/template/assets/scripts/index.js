@@ -51,6 +51,10 @@ electron.ipcRenderer.on('devices', function (event, devices) {
     })
 });
 
+electron.ipcRenderer.on('email', function (event, email) {
+    $("#user_email").html(email)
+});
+
 electron.ipcRenderer.on('files', function (event, files) {
     $("#recent-items").html('');
     
@@ -396,3 +400,4 @@ function animateCss(element, animationName, callback) {
 
     node.addEventListener('animationend', handleAnimationEnd)
 }
+

@@ -320,6 +320,15 @@ def get_device_pending_update_files (conn, login_token, device_id) :
             
             send_socket_msg(conn, json.dumps(file_ids))
 
+def get_email(conn, login_token) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+
+    if user_id is not 'False' :
+        user_query = db.select_query('users', 'id = ' + user_id, '')
+        email = user_query[0][1]
+        send_socket_msg(conn, email)
+        print(email)
+
 while True :
     conn, addr = s.accept()
     print("Connected by: " , addr)
@@ -371,7 +380,8 @@ while True :
         pend_file_to_synced_devices(conn, tokens[1], tokens[2], tokens[3])
     elif action == "get_device_pending_update_files" :
         get_device_pending_update_files(conn, tokens[1], tokens[2])
-
+    elif action == "get_user_email" : 
+        get_email(conn, tokens[1])
 
     conn.close()
 
