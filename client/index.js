@@ -519,6 +519,10 @@ ipc.on('sync-file', function (event, details) {
 	}
 });
 
+ipc.on('dnd-upload', function (event, path) {
+	register_file(path);
+});
+
 // Register file in the DB
 function register_file (path) {
 	try {
@@ -571,7 +575,6 @@ function file_listen () {
 				c.on("data", function (path) {
 					path = path.toString();
 					if (path != '') {
-						console.log(path);
 						file_ask_listen(path, connection);
 					}
 		
@@ -590,13 +593,12 @@ function file_listen () {
 }
 
 tcpPortUsed.check(1234, '127.0.0.1').then(function(inUse) {
-	if (!inUse()) {
+	if (!inUse) {
 		file_listen();
 	}
 }, function(err) {
     console.error('Error on check:', err.message);
 });
-
 
 function file_ask_listen (path, client) {
 	if (fs.existsSync(path)) {
@@ -644,7 +646,7 @@ function recieve_file (ip, port, dest, file_id, is_preview) {
 	var socket = new net.Socket();
 	socket.connect(port, ip);
 	var packets = 0;
-	var buffer = new Buffer(0);
+	var buffer = new Buffer.alloc(0);
 	var filename = '';
 	var not_connected = false;
 	var totalBytes = 0;
@@ -742,6 +744,8 @@ function save_file_version (file_id, extension, path) {
 }
 
 function save_file (file, dest) {
+	// TODO: Save empty files too
+
 	try {
 		var c = net.createConnection(SERVER_PORT, SERVER_IP);
 		c.on("connect", function() {

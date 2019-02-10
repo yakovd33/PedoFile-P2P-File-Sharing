@@ -337,3 +337,62 @@ function restore_version (file_id, version_id, hash, path) {
 $("#file-version-list-bg").click(function () {
     $("#file-version-list").hide();
 });
+
+// File drag
+$(document).ready(function() {
+    $('input[type=file]').change(function() {
+        console.log(this.files);
+        var f = this.files;
+        var el = $(this).parent();
+
+        Array.from(this.files).forEach(file => {
+            type = file.type;
+            size = file.size;
+            electron.ipcRenderer.send('dnd-upload', file.path);
+            console.log(file);
+        });
+
+        $(this).val('');
+        
+        animateCss('#dnd-form-text i', 'wobble', function () {
+            $("#dnd-form").fadeOut(300);
+        });
+    });
+
+    $('input[type=file]').on('focus', function() {
+        $(this).parent().addClass('focus');
+    });
+
+    $('input[type=file]').on('blur', function() {
+        $(this).parent().removeClass('focus');
+    });
+
+    var dragTimer;
+    $(document).on('dragover', function(e) {
+        var dt = e.originalEvent.dataTransfer;
+        if (dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.contains('Files'))) {
+            $("#dnd-form").fadeIn();
+            window.clearTimeout(dragTimer);
+        }
+    });
+
+    $(document).on('dragleave', function(e) {
+        dragTimer = window.setTimeout(function() {
+            $("#dnd-form").fadeOut(300);
+        }, 25);
+    });
+});
+
+function animateCss(element, animationName, callback) {
+    const node = document.querySelector(element)
+    node.classList.add('animated', animationName)
+
+    function handleAnimationEnd() {
+        node.classList.remove('animated', animationName)
+        node.removeEventListener('animationend', handleAnimationEnd)
+
+        if (typeof callback === 'function') callback()
+    }
+
+    node.addEventListener('animationend', handleAnimationEnd)
+}

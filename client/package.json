@@ -26,6 +26,7 @@
     "electron-rebuild": "^1.8.2"
   },
   "dependencies": {
+    "electron-drag-drop": "^1.1.0",
     "electron-handlebars": "^2.0.0",
     "electron-store": "^2.0.0",
     "express": "^4.16.4",

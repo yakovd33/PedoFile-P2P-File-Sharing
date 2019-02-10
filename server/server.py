@@ -232,7 +232,7 @@ def auto_sync (conn, login_token, file_id, device_id, path) :
                     db.query("DELETE FROM `auto_update` WHERE `device_id` = " + str(device_id) + " AND `file_id` = " + str(file_id))
                 else:
                     db.query("INSERT INTO `auto_update` (`device_id`, `file_id`, `path`, `source_device_id`) VALUES (" + device_id + ", '" + file_id + "', '" + path + "', " + str(source_device_id) + ")")
-                    db.query("INSERT INTO `auto_update` (`device_id`, `file_id`) VALUES (" + device_id + ", '" + file_id + "')")
+                    # db.query("INSERT INTO `auto_update` (`device_id`, `file_id`) VALUES (" + device_id + ", '" + file_id + "')")
 
 def get_file_details (conn, login_token, file_id) :
     user_id = str(get_user_id_by_login_token(login_token, db))
@@ -315,7 +315,7 @@ def get_device_pending_update_files (conn, login_token, device_id) :
                     })
 
                 # Delete pending change
-                db.query("DELETE FROM `pending_changes` WHERE `id` = " + pending_update[0])
+                db.query("DELETE FROM `pending_updates` WHERE `id` = " + str(pending_update[0]))
             
             send_socket_msg(conn, json.dumps(file_ids))
 

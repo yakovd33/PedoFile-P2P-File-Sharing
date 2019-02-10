@@ -7,6 +7,7 @@
 		<style>#loader{transition:all .3s ease-in-out;opacity:1;visibility:visible;position:fixed;height:100vh;width:100%;background:#fff;z-index:90000}#loader.fadeOut{opacity:0;visibility:hidden}.spinner{width:40px;height:40px;position:absolute;top:calc(50% - 20px);left:calc(50% - 20px);background-color:#333;border-radius:100%;-webkit-animation:sk-scaleout 1s infinite ease-in-out;animation:sk-scaleout 1s infinite ease-in-out}@-webkit-keyframes sk-scaleout{0%{-webkit-transform:scale(0)}100%{-webkit-transform:scale(1);opacity:0}}@keyframes sk-scaleout{0%{-webkit-transform:scale(0);transform:scale(0)}100%{-webkit-transform:scale(1);transform:scale(1);opacity:0}}</style>
 		<link href="assets/css/style.css" rel="stylesheet">
 		<link href="assets/css/index.css" rel="stylesheet">
+		<link href="assets/css/animate.css" rel="stylesheet">
 		<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 		<script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 		<script>if (window.module) module = window.module;</script>
@@ -16,6 +17,17 @@
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
 	</head>
 	<body class="app">
+		<form id="dnd-form" method="post" action="/upload">
+			<label class="file">
+				<input type="file" multiple>
+			</label>
+
+			<div id="dnd-form-text">
+				<i class="fas fa-paperclip"></i>
+				Drop Files Here
+			</div>
+		</form>
+
 		<div id="container-floating" class="fab--book-holiday" data-toggle="manualtooltip" data-trigger="manual" data-placement="left" title="Book time off">
 			<a href="#" id="lock-date-button" class="lock-date">
 				<div class="lock-date nds" data-toggle="manualtooltip" data-trigger="manual" data-placement="left" data-original-title="Lock date">
