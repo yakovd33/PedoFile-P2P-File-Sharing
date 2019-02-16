@@ -16,9 +16,9 @@ var virustotal = require('node-virustotal');
 // VirusTotal
 var vtconn = virustotal.MakePublicConnection();
 vtconn.setKey("5dcce6e2a727e29ff559c69cd2ffcb26310f678cd307e50c7d116b54726a2879");
-console.log("VirusTotal API: " + vtconn.getKey());
+// console.log("VirusTotal API: " + vtconn.getKey());
 vtconn.setDelay(15000);
-console.log("VirusTotal Delay: " + vtconn.getDelay());
+// console.log("VirusTotal Delay: " + vtconn.getDelay());
 
 var page_number = 0;
 // file_listen();
@@ -183,7 +183,7 @@ function signup (email, password) {
 		c.on("data", function (buffer) {
 			buffer = buffer.toString();
 			if (buffer != "success") {
-				console.log(buffer);
+				// console.log(buffer);
 				mainWindow.webContents.send('feedback', buffer);
 			} else {
 				login(email, password)
@@ -256,7 +256,6 @@ function update_devices_list () {
 
 		c.on("data", function (devices_json) {
 			devices_json = devices_json.toString();
-			console.log('devices json: ' + devices_json);
 			c.end();
 
 			mainWindow.webContents.send('devices', JSON.parse(devices_json))
@@ -278,7 +277,6 @@ function update_files_list () {
 			files_json = buffer.toString();
 			files = JSON.parse(files_json)
 			mainWindow.webContents.send('files', files);
-			console.log(files);
 			socket.end();
 		});
 	} catch (e) {
@@ -346,7 +344,6 @@ ipc.on('select_folder', function (event, device_id) {
 	i = 0;
 	folders = dialog.showOpenDialog({ properties: [ 'openFile', 'openDirectory', 'multiSelections' ] }, function (folder) {
 		i++;
-		console.log(folder);
 		setTimeout(function () {
 			fs.readdir(folder.toString(), function(err, dir) {
 				j = 0;
@@ -355,7 +352,6 @@ ipc.on('select_folder', function (event, device_id) {
 					j++;
 
 					setTimeout(function () {
-						console.log(folder + '\\' + path);
 						register_file(folder + '\\' + path);
 					}, j * 500);
 				}
@@ -383,7 +379,6 @@ ipc.on('preview-file', function (event, file) {
 		c.on("data", function (buffer) {
 			buffer = buffer.toString();
 			json = JSON.parse(buffer);
-			console.log(json);
 			c.end();
 
 			tmp.file(function _tempFileCreated(err, path, fd, cleanupCallback) {
@@ -535,14 +530,14 @@ function register_file (path) {
 		var file_hash = md5File.sync(path);
 		var viruses_found = 0;
 		vtconn.getFileReport(file_hash, function(data){
-			//console.log(data);
+			console.log(data);
 			console.log("Viruses: " + data['positives']);
 			viruses_found = data['positives'];
 
 		  }, function(e){
 			console.log(e);
 		  });
-		if(viruses_found == 0)
+		if(data['positives'] == 0)
 		{
 			md5File(path, function (err, hash) {
 				var c = net.createConnection(SERVER_PORT, SERVER_IP);
@@ -684,6 +679,7 @@ function recieve_file (ip, port, dest, file_id, is_preview) {
 
 	socket.on('data', function(chunk) {
 		packets++;
+		// chunk = decrypt(chunk.toString());
 		buffer = Buffer.concat([buffer, chunk]);
 		totalBytes += buffer.length;
 	});
@@ -697,10 +693,10 @@ function recieve_file (ip, port, dest, file_id, is_preview) {
 				while (buffer.length) {
 					var head = buffer.slice(0, 4);
 
-					if(head.toString() != "FILE"){
-						console.log("ERROR!!!!");
-						process.exit(1);
-					}
+					// if(head.toString() != "FILE"){
+					// 	console.log("ERROR!!!!");
+					// 	process.exit(1);
+					// }
 					var sizeHex = buffer.slice(4, 8);
 					var size = parseInt(sizeHex, 16);
 
@@ -712,6 +708,9 @@ function recieve_file (ip, port, dest, file_id, is_preview) {
 					// 	process.exit(1);
 					// }
 
+					// console.log(content.toString());
+					// console.log(decrypt(content.toString()));
+					// content = decrypt(content.toString());
 					writeStream.write(content);
 					buffer = buffer.slice(size + 9);
 				}
@@ -783,7 +782,6 @@ function save_file (file, dest) {
 		c.on("data", function (buffer) {
 			buffer = buffer.toString();
 			json = JSON.parse(buffer);
-			console.log(json);
 			c.end();
 
 			recieve_file(json.ip, json.port, dest, file.id, false);
@@ -793,41 +791,29 @@ function save_file (file, dest) {
 	}
 }
 
-function update_email () {
-	try {
-		var c = net.createConnection(SERVER_PORT, SERVER_IP);
-		c.on("connect", function() {
-			// connected to TCP server.
-			c.write("get_user_email;;" + store.get('login_token'));
-		});
+// Nodejs encryption with CTR
+const crypto = require('crypto');
+const algorithm = 'aes-256-cbc';
+const key = crypto.randomBytes(32);
+const iv = crypto.randomBytes(16);
 
-		c.on("data", function (email) {
-			c.end();
-
-			mainWindow.webContents.send('email', email.toString())
-			console.log(email.toString())
-		});
-	} catch (e) {
-		console.log(e);
-	}
+function encrypt(text) {
+	let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv);
+	let encrypted = cipher.update(text);
+	encrypted = Buffer.concat([encrypted, cipher.final()]);
+	return JSON.stringify({ dub: iv.toString('hex'), leh: encrypted.toString('hex') });
+	
+	// dub: IV
+	// leh: encryptedData
 }
 
-function update_page_numbers () {
-	try {
-		var c = net.createConnection(SERVER_PORT, SERVER_IP);
-		c.on("connect", function() {
-			// connected to TCP server.
-			c.write("get_user_page_number;;" + store.get('login_token'));
-		});
-
-		c.on("data", function (page_numbers_json) {
-			page_numbers_json = page_numbers_json.toString();
-			console.log('page_numbers json: ' + page_numbers_json);
-			c.end();
-
-			mainWindow.webContents.send('page_number', JSON.parse(page_numbers_json))
-		});
-	} catch (e) {
-		console.log(e);
-	}
+function decrypt (text) {
+	console.log(text);
+	text = JSON.parse(text);
+	let iv = Buffer.from(text.dub, 'hex');
+	let encryptedText = Buffer.from(text.leh, 'hex');
+	let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
+	let decrypted = decipher.update(encryptedText);
+	decrypted = Buffer.concat([decrypted, decipher.final()]);
+	return decrypted.toString();
 }
