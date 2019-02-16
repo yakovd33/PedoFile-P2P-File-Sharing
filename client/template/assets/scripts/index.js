@@ -39,7 +39,7 @@ electron.ipcRenderer.on('devices', function (event, devices) {
     devices.forEach(device => {
         var source = document.getElementById("device-template").innerHTML;
         var template = Handlebars.compile(source);
-        var context = { id: device.id, platform: device.platform, name: device.name, last_active: device.last_active };
+        var context = { id: device.id, platform: device.platform, name: device.name, last_active: device.last_active, usage_percentage: device.usage_percentage };
         var html = template(context);
         $("#device-cards ul.device-list").append(html);
     });

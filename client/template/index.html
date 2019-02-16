@@ -75,7 +75,15 @@
 			<main class="main-content bgc-grey-100">
 				<div id="mainContent">
 					<div id="files-showcase">
-						<p><strong>Recent</strong></p>
+						<p> <!-- TOP BAR -->
+							<strong>Recent</strong>
+							<strong class="page-btn">
+							<button type="button" class="btn btn-clicked">1</button>
+							<button type="button" class="btn btn-light">2</button>
+							<button type="button" class="btn btn-light">3</button>
+							<button type="button" class="btn btn-light">4</button>
+							</strong>
+						</p>
 
 						<div id="recent-items" class="row row-eq-height">
 							<div class="col-md-3">
@@ -187,23 +195,16 @@
 					</header>
 					<article class="device-info">
 						<div class="device-space">
-							<h3>Storage Usage</h3>
+							<h3>Used Space</h3>
 							<div class="available-space">
-								<div class="used-space--photos" style="width: 41%;"></div>
-								<div class="used-space--videos" style="width: 28%;"></div>
-								<div class="used-space--system" style="width: 9%;"></div>
+								<div class="used-space--photos" style="width: {{ usage_percentage }}%;"></div>
 							</div>
 						</div>
 						<ul class="device-legend">
 							<li>
-								<i class="fa fa-circle system"></i><!-- react-text: 304 --> Apps<!-- /react-text -->
+								<i class="fa fa-circle photos"></i><!-- react-text: 304 --> Files<!-- /react-text -->
 							</li>
-							<li>
-								<i class="fa fa-circle videos"></i><!-- react-text: 307 --> Videos<!-- /react-text -->
-							</li>
-							<li>
-								<i class="fa fa-circle photos"></i><!-- react-text: 310 --> Photos<!-- /react-text -->
-							</li>
+						
 							<li>
 								<i class="fa fa-circle available"></i><!-- react-text: 313 --> Available<!-- /react-text -->
 							</li>

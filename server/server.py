@@ -66,11 +66,11 @@ def signup_device (conn) :
         db.query("INSERT INTO `devices` (`user_id`, `name`, `last_active`, `platform`) VALUES (" + user_id + ", '" + device_name + "', '" + get_timestamp() + "', '" + platform + "')")
         send_socket_msg(conn, str(db.lastInsertId))
 
-def get_user_files (conn, login_token, limit) :
+def get_user_files (conn, login_token, offset) :
     user_id = str(get_user_id_by_login_token(login_token, db))
 
     if user_id is not 'False' :
-        user_files_query = db.select_query('files', 'user_id = ' + user_id, 'ORDER BY `uploaded` DESC LIMIT ' + limit)
+        user_files_query = db.select_query('files', 'user_id = ' + user_id, 'ORDER BY `uploaded` DESC LIMIT 5 OFFSET ' + offset)
         files = []
         for file in user_files_query :
             tmp_file = {}
@@ -87,6 +87,9 @@ def get_user_devices (conn, login_token) :
 
     if user_id is not 'False' :
         user_devices_query = db.select_query('devices', 'user_id = ' + user_id + " AND `active`", '')
+        
+        user_files_query = db.select_query('files', 'user_id = ' + user_id, '')
+        user_files = db.rowCount
         devices = []
         for device in user_devices_query :
             tmp_device = {}
@@ -94,6 +97,11 @@ def get_user_devices (conn, login_token) :
             tmp_device['name'] = device[2]
             tmp_device['platform'] = device[3]
             tmp_device['last_active'] = humanize_time(device[4])
+
+            device_files_query = db.select_query('files', 'device_id = ' + str(device[0]), '')
+            
+            device_files = db.rowCount
+            tmp_device['usage_percentage'] = round((device_files / user_files) * 100)
             devices.append(tmp_device)
         
         send_socket_msg(conn, json.dumps(devices))
@@ -135,7 +143,6 @@ def register_file (conn, login_token, device_id, path, md5) :
         if db.rowCount > 0 :
             # Register the file
             db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`, `md5`, `auto_update`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "', '" + md5 + "', 0)")
-            db.query("INSERT INTO `files` (`name`, `user_id`, `device_id`, `path`, `extension`, `md5`) VALUES ('" + filename + "', " + user_id + ", " + device_id + ", '" + path + "', '" + file_extension + "', '" + md5 + "' )")
 
             resp = {
                 'id': db.lastInsertId,

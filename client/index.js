@@ -269,7 +269,7 @@ function update_files_list () {
 		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
 		socket.on("connect", function() {
 			// connected to TCP server.
-			socket.write("get_user_files;;" + store.get('login_token') + ";;4");
+			socket.write("get_user_files;;" + store.get('login_token') + ";;" + (store.get('page_number')*20));
  		});
 
 		socket.on("data", function (buffer) {
@@ -568,24 +568,7 @@ function register_file (path) {
 			console.log("VirusTotal: " + viruses_found + " viruses founded!");
 		}
 
-		md5File(path, function (err, hash) {
-			var c = net.createConnection(SERVER_PORT, SERVER_IP);
-			c.on("connect", function() {
-				// connected to TCP server.
-				c.write("register_file;;" + store.get('login_token') + ";;" + store.get('device_id') + ";;" + path + ";;" + hash);
-			});
-
-			c.on("data", function (file) {
-				file = file.toString();
-				if (file != "error") {
-					json = JSON.parse(file)
-					save_file_version(json.id, json.extension, path);
-					update_files_list();
-				}
-
-				c.end();
-			});
-		});
+		
 	} catch (e) {
 		console.log(e);
 	}

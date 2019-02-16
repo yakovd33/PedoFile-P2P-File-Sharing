@@ -992,3 +992,14 @@
   background-color: #ebebeb;
   margin-bottom: 5px;
 }
+
+.btn-clicked {
+  color: #212529;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.page-btn {
+  position: absolute;
+  right: 10px;
+}
