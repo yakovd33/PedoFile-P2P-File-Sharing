@@ -47,7 +47,6 @@ electron.ipcRenderer.on('devices', function (event, devices) {
         var context = { id: device.id, platform: device.platform, name: device.name, last_active: device.last_active, usage_percentage: device.usage_percentage };
         var html = template(context);
         $("#device-cards ul.device-list").append(html);
-        $("#settings-card ul.settings-list").append(html);
     });
 
     $.each($(".ui-card .toggle"), function () {
