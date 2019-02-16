@@ -1003,3 +1003,23 @@
   position: absolute;
   right: 10px;
 }
+
+/* Settings card */
+#settings-card {
+  background: #eff2f7;
+  position: fixed;
+  left: 100%;
+  top: 65px;
+  bottom: 0;
+  right: 0;
+  transition: 0.8s ease;
+  z-index: 9999;
+  overflow-y: auto;
+}
+
+#settings-card.active {
+  left: 0;
+  right: 0;
+  top: 65px;
+  bottom: 0;
+}
