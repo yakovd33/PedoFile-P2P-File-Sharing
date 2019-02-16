@@ -3,6 +3,11 @@ $("#toggle-devices").click(function () {
     $("#device-cards").toggleClass("active");
 });
 
+$("#toggle-settings").click(function () {
+    console.log('changing settings');
+    $("#settings-card").toggleClass("active");
+});
+
 $.each($(".disconnect"), function () {
     $(this).click(function () {
         if (confirm('Are you sure you want to delete this device?')) {
@@ -42,6 +47,7 @@ electron.ipcRenderer.on('devices', function (event, devices) {
         var context = { id: device.id, platform: device.platform, name: device.name, last_active: device.last_active, usage_percentage: device.usage_percentage };
         var html = template(context);
         $("#device-cards ul.device-list").append(html);
+        $("#settings-card ul.settings-list").append(html);
     });
 
     $.each($(".ui-card .toggle"), function () {
@@ -52,8 +58,6 @@ electron.ipcRenderer.on('devices', function (event, devices) {
 });
 
 electron.ipcRenderer.on('page-number', function (event, pages) {
-    $("#page-numbers").html('');
-
     pages.forEach(page_number => {
         var source = document.getElementById("page-number-template").innerHTML;
         var template = Handlebars.compile(source);

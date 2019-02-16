@@ -63,7 +63,9 @@
 								<div class="peer"><span class="fsz-sm c-grey-900"><span id="user_email"></span></span></div>
 							</a>
 							<ul class="dropdown-menu fsz-sm">
-			   					<li><a href="" class="d-b td-n pY-5 bgcH-grey-100 c-grey-700"><i class="ti-settings mR-10"></i> <span>Setting</span></a></li>
+								<li id="toggle-settings">
+									<a href="#" class="d-b td-n pY-5 bgcH-grey-100 c-grey-700" onclick="event.preventDefault()"><i class="ti-settings mR-10"></i> <span>Setting</span></a>
+								</li>
 								<li><a href="" class="d-b td-n pY-5 bgcH-grey-100 c-grey-700"><i class="ti-user mR-10"></i> <span>Profile</span></a></li>
 								<li role="separator" class="divider"></li>
 								<li id="logout-btn"><a href="" class="d-b td-n pY-5 bgcH-grey-100 c-grey-700"><i class="ti-power-off mR-10"></i> <span>Logout</span></a></li>
@@ -233,6 +235,11 @@
 
 		<div id="device-cards">
 			<ul data-reactroot="" class="device-list">
+			</ul>
+		</div>
+
+		<div id="settings-card">
+			<ul data-reactroot="" class="settings-list">
 			</ul>
 		</div>
 
