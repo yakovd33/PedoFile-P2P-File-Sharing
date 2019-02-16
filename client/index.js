@@ -791,6 +791,44 @@ function save_file (file, dest) {
 	}
 }
 
+function update_email () {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("get_user_email;;" + store.get('login_token'));
+		});
+
+		c.on("data", function (email) {
+			c.end();
+
+			mainWindow.webContents.send('email', email.toString())
+			console.log(email.toString())
+		});
+	} catch (e) {
+		console.log(e);
+	}
+}
+function update_page_numbers () {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("get_user_page_number;;" + store.get('login_token'));
+		});
+
+		c.on("data", function (page_numbers_json) {
+			page_numbers_json = page_numbers_json.toString();
+			console.log('page_numbers json: ' + page_numbers_json);
+			c.end();
+
+			mainWindow.webContents.send('page_number', JSON.parse(page_numbers_json))
+		});
+	} catch (e) {
+		console.log(e);
+	}
+}
+
 // Nodejs encryption with CTR
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc';
