@@ -68,7 +68,7 @@
 }
 
 #device-cards.active {
-    left: 70px;
+    left: 0;
     right: 0;
     top: 65px;
     bottom: 0;
@@ -991,4 +991,15 @@
   height: 1px;
   background-color: #ebebeb;
   margin-bottom: 5px;
+}
+
+.btn-clicked {
+  color: #212529;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.page-btn {
+  position: absolute;
+  right: 10px;
 }

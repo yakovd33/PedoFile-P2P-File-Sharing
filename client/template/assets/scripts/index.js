@@ -39,7 +39,7 @@ electron.ipcRenderer.on('devices', function (event, devices) {
     devices.forEach(device => {
         var source = document.getElementById("device-template").innerHTML;
         var template = Handlebars.compile(source);
-        var context = { id: device.id, platform: device.platform, name: device.name, last_active: device.last_active };
+        var context = { id: device.id, platform: device.platform, name: device.name, last_active: device.last_active, usage_percentage: device.usage_percentage };
         var html = template(context);
         $("#device-cards ul.device-list").append(html);
     });
@@ -49,6 +49,22 @@ electron.ipcRenderer.on('devices', function (event, devices) {
             $(this).parent().toggleClass("sidebar-open");
         })
     })
+});
+
+electron.ipcRenderer.on('page-number', function (event, pages) {
+    $("#page-numbers").html('');
+
+    pages.forEach(page_number => {
+        var source = document.getElementById("page-number-template").innerHTML;
+        var template = Handlebars.compile(source);
+        var context = { id: page_number.id, class: page_number.class };
+        var html = template(context);
+        $("#page-numbers").append(html);
+    });
+});
+electron.ipcRenderer.on('email', function (event, email) {
+    $("#user_email").html(email);
+    
 });
 
 electron.ipcRenderer.on('files', function (event, files) {
@@ -396,3 +412,4 @@ function animateCss(element, animationName, callback) {
 
     node.addEventListener('animationend', handleAnimationEnd)
 }
+

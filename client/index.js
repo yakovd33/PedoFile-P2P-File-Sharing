@@ -20,6 +20,7 @@ vtconn.setKey("5dcce6e2a727e29ff559c69cd2ffcb26310f678cd307e50c7d116b54726a2879"
 vtconn.setDelay(15000);
 // console.log("VirusTotal Delay: " + vtconn.getDelay());
 
+var page_number = 0;
 // file_listen();
 
 let SERVER_IP = '127.0.0.1';
@@ -35,7 +36,8 @@ function dashboard () {
 	ipc.on('did-finish-load', function () {
 		update_files_list();
 		update_devices_list();
-	
+		update_email();
+		update_page_numbers();
 		// setTimeout(function () {
 		// 	if (is_device_registered()) {
 		// 		update_device_ip();
@@ -101,6 +103,7 @@ function login (email, password) {
 			} else {
 				// Login successful
 				store.set('login_token', buffer);
+
 				if (!is_device_registered()) {
 					register_device();
 				}
@@ -267,7 +270,7 @@ function update_files_list () {
 		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
 		socket.on("connect", function() {
 			// connected to TCP server.
-			socket.write("get_user_files;;" + store.get('login_token') + ";;4");
+			socket.write("get_user_files;;" + store.get('login_token') + ";;" + (page_number*20));
  		});
 
 		socket.on("data", function (buffer) {
@@ -525,15 +528,17 @@ ipc.on('dnd-upload', function (event, path) {
 function register_file (path) {
 	try {
 		var file_hash = md5File.sync(path);
+		var viruses_found = 0;
 		vtconn.getFileReport(file_hash, function(data){
 			console.log(data);
 			console.log("Viruses: " + data['positives']);
+			viruses_found = data['positives'];
 
 		  }, function(e){
 			console.log(e);
 		  });
-		// if(data['positives'] == 0)
-		// {
+		if(data['positives'] == 0)
+		{
 			md5File(path, function (err, hash) {
 				var c = net.createConnection(SERVER_PORT, SERVER_IP);
 				c.on("connect", function() {
@@ -552,31 +557,15 @@ function register_file (path) {
 					c.end();
 				});
 			});
-		// }
-		// else
-		// {
+		}
+		else
+		{
 			//TODO: add user popup
-			// console.log("VirusTotal: viruses founded!");
-		// }
- 
-		md5File(path, function (err, hash) {
-			var c = net.createConnection(SERVER_PORT, SERVER_IP);
-			c.on("connect", function() {
-				// connected to TCP server.
-				c.write("register_file;;" + store.get('login_token') + ";;" + store.get('device_id') + ";;" + path + ";;" + hash);
-			});
+			dialog.showErrorBox("Virus Found!", viruses_found + " Viruses Founded!");
+			console.log("VirusTotal: " + viruses_found + " viruses founded!");
+		}
 
-			c.on("data", function (file) {
-				file = file.toString();
-				if (file != "error") {
-					json = JSON.parse(file)
-					save_file_version(json.id, json.extension, path);
-					update_files_list();
-				}
-
-				c.end();
-			});
-		});
+		
 	} catch (e) {
 		console.log(e);
 	}
