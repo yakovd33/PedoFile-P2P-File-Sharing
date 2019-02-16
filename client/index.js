@@ -20,6 +20,7 @@ console.log("VirusTotal API: " + vtconn.getKey());
 vtconn.setDelay(15000);
 console.log("VirusTotal Delay: " + vtconn.getDelay());
 
+var page_number = 0;
 // file_listen();
 
 let SERVER_IP = '127.0.0.1';
@@ -36,7 +37,7 @@ function dashboard () {
 		update_files_list();
 		update_devices_list();
 		update_email();
-	
+		update_page_numbers();
 		// setTimeout(function () {
 		// 	if (is_device_registered()) {
 		// 		update_device_ip();
@@ -102,6 +103,7 @@ function login (email, password) {
 			} else {
 				// Login successful
 				store.set('login_token', buffer);
+
 				if (!is_device_registered()) {
 					register_device();
 				}
@@ -269,7 +271,7 @@ function update_files_list () {
 		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
 		socket.on("connect", function() {
 			// connected to TCP server.
-			socket.write("get_user_files;;" + store.get('login_token') + ";;" + (store.get('page_number')*20));
+			socket.write("get_user_files;;" + store.get('login_token') + ";;" + (page_number*20));
  		});
 
 		socket.on("data", function (buffer) {
@@ -804,6 +806,26 @@ function update_email () {
 
 			mainWindow.webContents.send('email', email.toString())
 			console.log(email.toString())
+		});
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+function update_page_numbers () {
+	try {
+		var c = net.createConnection(SERVER_PORT, SERVER_IP);
+		c.on("connect", function() {
+			// connected to TCP server.
+			c.write("get_user_page_number;;" + store.get('login_token'));
+		});
+
+		c.on("data", function (page_numbers_json) {
+			page_numbers_json = page_numbers_json.toString();
+			console.log('page_numbers json: ' + page_numbers_json);
+			c.end();
+
+			mainWindow.webContents.send('page_number', JSON.parse(page_numbers_json))
 		});
 	} catch (e) {
 		console.log(e);

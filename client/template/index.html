@@ -77,12 +77,9 @@
 					<div id="files-showcase">
 						<p> <!-- TOP BAR -->
 							<strong>Recent</strong>
-							<strong class="page-btn">
-							<button type="button" class="btn btn-clicked">1</button>
-							<button type="button" class="btn btn-light">2</button>
-							<button type="button" class="btn btn-light">3</button>
-							<button type="button" class="btn btn-light">4</button>
-							</strong>
+							<div class="page-btn" id="page-numbers">
+									<button type="button" class="btn btn-clicked">1</button>
+							</div>
 						</p>
 
 						<div id="recent-items" class="row row-eq-height">
@@ -161,6 +158,10 @@
 			</div>
 		</div>
 
+		<script id="page-number-template" type="text/x-handlebars-template">
+			<button type="button" class="btn {{ class }}">{{ id }}</button>
+		</script>
+
 		<script id="file-version-list-item-template" type="text/x-handlebars-template">
 			<div class="versions-list-item">
 				<div class="version-item-date">{{ date }}</div>
@@ -174,7 +175,7 @@
 		</script>
 
 		<script id="file-template" type="text/x-handlebars-template">
-			<div class="col-md-3">
+			<div class="col-md-3" style="padding-top: 15px;">
 				<div class="recent-item recent-item-pic" data-id="{{ id }}" data-name="{{ name }}" data-path="{{ path }}" data-extension="{{ extension }}">
 					<div class="recent-item-pic" style="background-image: url('assets/images/extensions/{{ extension }}.png')"></div>
 					<div class="recent-item-title">

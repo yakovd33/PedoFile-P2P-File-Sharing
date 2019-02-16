@@ -51,8 +51,20 @@ electron.ipcRenderer.on('devices', function (event, devices) {
     })
 });
 
+electron.ipcRenderer.on('page-number', function (event, pages) {
+    $("#page-numbers").html('');
+
+    pages.forEach(page_number => {
+        var source = document.getElementById("page-number-template").innerHTML;
+        var template = Handlebars.compile(source);
+        var context = { id: page_number.id, class: page_number.class };
+        var html = template(context);
+        $("#page-numbers").append(html);
+    });
+});
 electron.ipcRenderer.on('email', function (event, email) {
-    $("#user_email").html(email)
+    $("#user_email").html(email);
+    
 });
 
 electron.ipcRenderer.on('files', function (event, files) {

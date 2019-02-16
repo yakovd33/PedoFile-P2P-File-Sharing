@@ -5,6 +5,7 @@ from database import DB
 from functions import *
 from urllib.parse import unquote
 import json
+import math
 
 try:
     HOST = "127.0.0.1"
@@ -336,6 +337,24 @@ def get_email(conn, login_token) :
         send_socket_msg(conn, email)
         print(email)
 
+def get_page_numbers(conn, login_token) :
+    user_id = str(get_user_id_by_login_token(login_token, db))
+    print("get started")
+    if user_id is not 'False' :
+        print("got user id")
+        user_query = db.select_query('files', 'user_id = ' + user_id, '')
+        number_of_files = db.rowCount
+        pages = []
+        page_numbers = math.ceil(number_of_files / 20)
+        for i in range(page_numbers) :
+            tmp_page = {}
+            tmp_page['id'] = i
+            tmp_page['class'] = "btn-light"
+            pages.append(tmp_page)
+        
+        send_socket_msg(conn, json.dumps(pages))
+        print(pages)
+
 while True :
     conn, addr = s.accept()
     print("Connected by: " , addr)
@@ -389,6 +408,8 @@ while True :
         get_device_pending_update_files(conn, tokens[1], tokens[2])
     elif action == "get_user_email" : 
         get_email(conn, tokens[1])
+    elif action == "get_user_page_number" :
+        get_page_numbers(conn, tokens[1])
 
     conn.close()
 
