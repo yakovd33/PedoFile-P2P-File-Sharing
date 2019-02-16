@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://gitlab.com/yakovd33/akko-902-pedofile/issues"
   },
-  "homepage": "https://gitlab.com/yakovd33/akko-902-pedofile#README"
+  "homepage": "https://gitlab.com/yakovd33/akko-902-pedofile#README",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "node-virustotal": "^2.4.2"
+  }
 }
