@@ -4,7 +4,10 @@ $("#toggle-devices").click(function () {
 });
 
 $("#toggle-settings").click(function () {
-    console.log('changing settings');
+    $("#settings-card").toggleClass("active");
+});
+
+$("#close-btn").click(function () {
     $("#settings-card").toggleClass("active");
 });
 
@@ -56,18 +59,25 @@ electron.ipcRenderer.on('devices', function (event, devices) {
     })
 });
 
-electron.ipcRenderer.on('page-number', function (event, pages) {
+electron.ipcRenderer.on('page_number', function (event, pages) {
+    $("#page-numbers").html('');
+    
     pages.forEach(page_number => {
         var source = document.getElementById("page-number-template").innerHTML;
         var template = Handlebars.compile(source);
-        var context = { id: page_number.id, class: page_number.class };
+        var context = { id: page_number.id, number: page_number.id };
         var html = template(context);
         $("#page-numbers").append(html);
     });
 });
 electron.ipcRenderer.on('email', function (event, email) {
     $("#user_email").html(email);
-    
+    $('#settings-email').val(email);
+});
+
+electron.ipcRenderer.on('settings-server', function (event, ip, port) {
+    $("#serverip").val(ip);
+    $('#serverport').val(port);
 });
 
 electron.ipcRenderer.on('files', function (event, files) {

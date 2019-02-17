@@ -71,7 +71,7 @@ def get_user_files (conn, login_token, offset) :
     user_id = str(get_user_id_by_login_token(login_token, db))
 
     if user_id is not 'False' :
-        user_files_query = db.select_query('files', 'user_id = ' + user_id, 'ORDER BY `uploaded` DESC LIMIT 5 OFFSET ' + offset)
+        user_files_query = db.select_query('files', 'user_id = ' + user_id, 'ORDER BY `uploaded` DESC LIMIT 8 OFFSET ' + offset)
         files = []
         for file in user_files_query :
             tmp_file = {}
@@ -134,7 +134,7 @@ def update_device_ip (conn) :
 
 def register_file (conn, login_token, device_id, path, md5) :
     user_id = str(get_user_id_by_login_token(login_token, db))
-
+    print("added file: " + path)
     if user_id is not 'False' :
         filename_w_ext = os.path.basename(path)
         filename, file_extension = os.path.splitext(filename_w_ext)
@@ -339,21 +339,17 @@ def get_email(conn, login_token) :
 
 def get_page_numbers(conn, login_token) :
     user_id = str(get_user_id_by_login_token(login_token, db))
-    print("get started")
     if user_id is not 'False' :
-        print("got user id")
         user_query = db.select_query('files', 'user_id = ' + user_id, '')
         number_of_files = db.rowCount
         pages = []
-        page_numbers = math.ceil(number_of_files / 20)
+        page_numbers = math.ceil(number_of_files / 8)
         for i in range(page_numbers) :
             tmp_page = {}
-            tmp_page['id'] = i
-            tmp_page['class'] = "btn-light"
+            tmp_page['id'] = i+1
             pages.append(tmp_page)
         
         send_socket_msg(conn, json.dumps(pages))
-        print(pages)
 
 while True :
     conn, addr = s.accept()

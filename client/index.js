@@ -17,7 +17,8 @@ var virustotal = require('node-virustotal');
 var vtconn = virustotal.MakePublicConnection();
 vtconn.setKey("5dcce6e2a727e29ff559c69cd2ffcb26310f678cd307e50c7d116b54726a2879");
 // console.log("VirusTotal API: " + vtconn.getKey());
-vtconn.setDelay(15000);
+vtconn.setDelay(1500);
+var virusData;
 // console.log("VirusTotal Delay: " + vtconn.getDelay());
 
 var page_number = 0;
@@ -38,6 +39,7 @@ function dashboard () {
 		update_devices_list();
 		update_email();
 		update_page_numbers();
+		update_server_settings();
 		// setTimeout(function () {
 		// 	if (is_device_registered()) {
 		// 		update_device_ip();
@@ -198,6 +200,7 @@ function signup (email, password) {
 	return true;
 }
 
+
 function delete_device (device_id) {
 	try {
 		var c = net.createConnection(SERVER_PORT, SERVER_IP);
@@ -270,7 +273,7 @@ function update_files_list () {
 		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
 		socket.on("connect", function() {
 			// connected to TCP server.
-			socket.write("get_user_files;;" + store.get('login_token') + ";;" + (page_number*20));
+			socket.write("get_user_files;;" + store.get('login_token') + ";;" + ((page_number-1)*8));
  		});
 
 		socket.on("data", function (buffer) {
@@ -308,6 +311,10 @@ ipc.on('signup_form_submit', function (event, data) {
 	if (!signup(email, password)) {
 		// Unsuccessful signup
 	}
+});
+
+ipc.on('change_page', function (event, page_id) {
+	change_page(page_id);
 });
 
 ipc.on('delete_device', function (event, device_id) {
@@ -529,15 +536,16 @@ function register_file (path) {
 	try {
 		var file_hash = md5File.sync(path);
 		var viruses_found = 0;
-		vtconn.getFileReport(file_hash, function(data){
-			console.log(data);
-			console.log("Viruses: " + data['positives']);
-			viruses_found = data['positives'];
+		vtconn.getFileReport(file_hash, function(virusData){
+			//console.log(virusData);
+			//console.log("Viruses: " + virusData['positives']);
+			viruses_found = virusData['positives'];
 
 		  }, function(e){
-			console.log(e);
+			//console.log(e);
 		  });
-		if(data['positives'] == 0)
+		
+		if(viruses_found == 0)
 		{
 			md5File(path, function (err, hash) {
 				var c = net.createConnection(SERVER_PORT, SERVER_IP);
@@ -817,18 +825,26 @@ function update_page_numbers () {
 			c.write("get_user_page_number;;" + store.get('login_token'));
 		});
 
-		c.on("data", function (page_numbers_json) {
-			page_numbers_json = page_numbers_json.toString();
-			console.log('page_numbers json: ' + page_numbers_json);
+		c.on("data", function (pn_json) {
+			pn_json = pn_json.toString();
+			console.log(pn_json);
 			c.end();
 
-			mainWindow.webContents.send('page_number', JSON.parse(page_numbers_json))
+			mainWindow.webContents.send('page_number', JSON.parse(pn_json))
 		});
 	} catch (e) {
 		console.log(e);
 	}
 }
 
+function update_server_settings () {
+	try {
+		mainWindow.webContents.send('settings-server', SERVER_IP, SERVER_PORT)
+		console.log(SERVER_IP.toString() + ":" + SERVER_PORT.toString())
+	} catch (e) {
+		console.log(e);
+	}
+}
 // Nodejs encryption with CTR
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc';
@@ -854,4 +870,10 @@ function decrypt (text) {
 	let decrypted = decipher.update(encryptedText);
 	decrypted = Buffer.concat([decrypted, decipher.final()]);
 	return decrypted.toString();
+}
+
+function change_page(page_id) {
+	//console.log("Page #" + page_id);
+	page_number = page_id;
+	update_files_list();
 }
