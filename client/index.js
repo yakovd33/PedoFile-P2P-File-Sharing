@@ -92,28 +92,35 @@ app.on('activate', function () {
 // Functions
 function login (email, password) {
 	try {
-		var c = net.createConnection(SERVER_PORT, SERVER_IP);
-		c.on("connect", function() {
-			// connected to TCP server.
-			c.write("login;;" + email + ";;" + password);
-		});
+		var patt_check = /[^A-Za-z0-9\.\_\-\(\)\ \\u0000\/\?\#\$]+/;
+		if(patt_check.test(email) && patt_check.test(password)) {
+			console.log("Invalid file search pattern");
+		}
+		else {
+			var c = net.createConnection(SERVER_PORT, SERVER_IP);
+			c.on("connect", function() {
+				// connected to TCP server.
+				c.write("login;;" + email + ";;" + password);
+			});
 
-		c.on("data", function (buffer) {
-			buffer = buffer.toString();
-			if (buffer == 'incorrect') {
-				mainWindow.webContents.send('incorrect', '');
-			} else {
-				// Login successful
-				store.set('login_token', buffer);
+			c.on("data", function (buffer) {
+				buffer = buffer.toString();
+				if (buffer == 'incorrect') {
+					mainWindow.webContents.send('incorrect', '');
+				} else {
+					// Login successful
+					store.set('login_token', buffer);
 
-				if (!is_device_registered()) {
-					register_device();
+					if (!is_device_registered()) {
+						register_device();
+					}
+					dashboard();
 				}
-				dashboard();
-			}
 
-			c.end();
-		});
+				c.end();
+			});
+
+		}
 	} catch (e) {
 		console.log(e);
 	}
@@ -174,25 +181,32 @@ function data_to_params (data) {
 
 function signup (email, password) {
 	try {
-		var c = net.createConnection(SERVER_PORT, SERVER_IP);
-		c.on("connect", function() {
-			// connected to TCP server.
-			c.write("signup");
-			c.write(email);
-			c.write(password);
-		});
+		var patt_check = /[^A-Za-z0-9\.\_\-\(\)\ \\u0000\/\?\#\$]+/;
+		if(patt_check.test(email) && patt_check.test(password)) {
+			console.log("Invalid file search pattern");
+		}
+		else {
+			var c = net.createConnection(SERVER_PORT, SERVER_IP);
+			c.on("connect", function() {
+				// connected to TCP server.
+				c.write("signup");
+				c.write(email);
+				c.write(password);
+			});
 
-		c.on("data", function (buffer) {
-			buffer = buffer.toString();
-			if (buffer != "success") {
-				// console.log(buffer);
-				mainWindow.webContents.send('feedback', buffer);
-			} else {
-				login(email, password)
-			}
+			c.on("data", function (buffer) {
+				buffer = buffer.toString();
+				if (buffer != "success") {
+					// console.log(buffer);
+					mainWindow.webContents.send('feedback', buffer);
+				} else {
+					login(email, password)
+				}
 
-			c.end();
-		});
+				c.end();
+			});
+
+		}
 	} catch (e) {
 		console.log(e);
 	}
@@ -533,19 +547,24 @@ ipc.on('dnd-upload', function (event, path) {
 
 ipc.on('search-file', function (event, file_to_search) {
 	try {
-		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
-		socket.on("connect", function() {
-			// connected to TCP server.
+		var patt_check = /[^A-Za-z0-9\.\_\-\(\)\ \\u0000\/]+/;
+		if(patt_check.test(file_to_search)) {
+			console.log("Invalid file search pattern");
+		}
+		else {
+			var socket = net.createConnection(SERVER_PORT, SERVER_IP);
+			socket.on("connect", function() {
+				// connected to TCP server.
+					socket.write("get_user_files;;" + store.get('login_token') + ";;" + ((page_number-1)*8) + ";;" + file_to_search);
+			});
 
-			socket.write("get_user_files;;" + store.get('login_token') + ";;" + ((page_number-1)*8) + ";;" + file_to_search);
- 		});
-
-		socket.on("data", function (buffer) {
-			files_json = buffer.toString();
-			files = JSON.parse(files_json)
-			mainWindow.webContents.send('files', files);
-			socket.end();
-		});
+			socket.on("data", function (buffer) {
+				files_json = buffer.toString();
+				files = JSON.parse(files_json)
+				mainWindow.webContents.send('files', files);
+				socket.end();
+			});
+		}
 	} catch (e) {
 		console.log(e);
 	}

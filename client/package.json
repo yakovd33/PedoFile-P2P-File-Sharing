@@ -26,6 +26,7 @@
     "electron-rebuild": "^1.8.2"
   },
   "dependencies": {
+    "crypto": "^1.0.1",
     "electron-drag-drop": "^1.1.0",
     "electron-handlebars": "^2.0.0",
     "electron-osx-prompt": "^1.4.1",
