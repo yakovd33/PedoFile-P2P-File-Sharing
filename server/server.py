@@ -67,11 +67,14 @@ def signup_device (conn) :
         db.query("INSERT INTO `devices` (`user_id`, `name`, `last_active`, `platform`) VALUES (" + user_id + ", '" + device_name + "', '" + get_timestamp() + "', '" + platform + "')")
         send_socket_msg(conn, str(db.lastInsertId))
 
-def get_user_files (conn, login_token, offset) :
+def get_user_files (conn, login_token, offset, search_parameter) :
     user_id = str(get_user_id_by_login_token(login_token, db))
 
+    if search_parameter is "null":
+        search_parameter = ""
+
     if user_id is not 'False' :
-        user_files_query = db.select_query('files', 'user_id = ' + user_id, 'ORDER BY `uploaded` DESC LIMIT 8 OFFSET ' + offset)
+        user_files_query = db.select_query('files', 'name LIKE \'%' + search_parameter + '%\' AND user_id = ' + user_id, 'ORDER BY `uploaded` DESC LIMIT 8 OFFSET ' + offset)
         files = []
         for file in user_files_query :
             tmp_file = {}
@@ -379,7 +382,7 @@ while True :
     elif action == "register_file" :
         register_file(conn, tokens[1], tokens[2], tokens[3], tokens[4])
     elif action == "get_user_files" :
-        get_user_files(conn, tokens[1], tokens[2])
+        get_user_files(conn, tokens[1], tokens[2], tokens[3])
     elif action == "get_file_device_details" :
         get_file_device_details(conn, tokens[1], tokens[2])
     elif action == "get_file_path_by_id" :

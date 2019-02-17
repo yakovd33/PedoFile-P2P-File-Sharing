@@ -273,7 +273,7 @@ function update_files_list () {
 		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
 		socket.on("connect", function() {
 			// connected to TCP server.
-			socket.write("get_user_files;;" + store.get('login_token') + ";;" + ((page_number-1)*8));
+			socket.write("get_user_files;;" + store.get('login_token') + ";;" + ((page_number-1)*8) + ";;" + "");
  		});
 
 		socket.on("data", function (buffer) {
@@ -529,6 +529,25 @@ ipc.on('sync-file', function (event, details) {
 
 ipc.on('dnd-upload', function (event, path) {
 	register_file(path);
+});
+
+ipc.on('search-file', function (event, file_to_search) {
+	try {
+		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
+		socket.on("connect", function() {
+			// connected to TCP server.
+			socket.write("get_user_files;;" + store.get('login_token') + ";;" + ((page_number-1)*8) + ";;" + file_to_search);
+ 		});
+
+		socket.on("data", function (buffer) {
+			files_json = buffer.toString();
+			files = JSON.parse(files_json)
+			mainWindow.webContents.send('files', files);
+			socket.end();
+		});
+	} catch (e) {
+		console.log(e);
+	}
 });
 
 // Register file in the DB
