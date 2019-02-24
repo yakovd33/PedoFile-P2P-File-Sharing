@@ -272,6 +272,40 @@
 			</div>
 		</div>
 
+		<div id="profile-card">
+			<a href="#" class="td-n close-page" id="close-btn"><i class="fa fa-times"></i></a>
+			<div class="p-20">
+				<h6 class="c-grey-900">Profile</h6>
+				<div class="mT-30">
+					<form>
+						<div class="form-row">
+							<div class="form-group col-md-6">
+								<label>Email</label>
+								<input type="email" class="form-control" id="settings-email" value="Email" readonly>
+							</div>
+							<div class="form-group col-md-6">
+								<label for="inputPassword4">Password</label>
+								<input type="password" class="form-control" id="inputPassword4" value="Password" readonly>
+							</div>
+						</div>
+						<h6 class="c-grey-900">Server</h6>
+						<div class="form-row">
+						<div class="form-group col-md-6">
+							<label for="inputAddress">IP</label>
+							<input required pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$" class="form-control" id="serverip" value="0.0.0.0">
+						</div>
+						<div class="form-group col-md-2">
+							<label for="inputAddress">Port</label>
+							<input type="number" class="form-control" id="serverport" value="8888">
+						</div>
+						</div>
+
+						<button type="submit" class="btn cur-p btn-outline-info">Update</button>
+					</form>
+				</div>
+			</div>
+		</div>
+
 		<script>
 			window.addEventListener('load', () => {
 				const loader = document.getElementById('loader');
