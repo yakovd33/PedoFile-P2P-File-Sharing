@@ -536,6 +536,7 @@ ipc.on('search-file', function (event, file_to_search) {
 		var socket = net.createConnection(SERVER_PORT, SERVER_IP);
 		socket.on("connect", function() {
 			// connected to TCP server.
+
 			socket.write("get_user_files;;" + store.get('login_token') + ";;" + ((page_number-1)*8) + ";;" + file_to_search);
  		});
 
@@ -709,6 +710,7 @@ function recieve_file (ip, port, dest, file_id, is_preview) {
 		// chunk = decrypt(chunk.toString());
 		buffer = Buffer.concat([buffer, chunk]);
 		totalBytes += buffer.length;
+		console.log("size: " + buffer.length);
 	});
 
 	socket.on('close', function(){
