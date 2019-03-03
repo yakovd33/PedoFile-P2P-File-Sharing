@@ -15,6 +15,14 @@ $("#search-file").keyup(function () {
     electron.ipcRenderer.send("search-file", $(this).val());
 });
 
+$("#toggle-settings").click(function () {
+    $("#settings-card").toggleClass("active");
+});
+
+$("#close-btn").click(function () {
+    $("#settings-card").toggleClass("active");
+});
+
 $.each($(".disconnect"), function () {
     $(this).click(function () {
         if (confirm('Are you sure you want to delete this device?')) {
