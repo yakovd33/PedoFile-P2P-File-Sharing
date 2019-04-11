@@ -25,6 +25,7 @@ def send_socket_msg (conn, msg) :
     conn.send(msg.encode())
 
 def login (conn, email, password) :
+    email = email.replace('%40', '@')
     user_query = db.select_query('users', "`email` = '" + email + "' AND `password_hashed` = '" + password_hash(password) + "'", '')
     if (db.rowCount > 0) :
         # Insert login token
